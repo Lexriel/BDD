@@ -1,0 +1,15 @@
+bar.
+sert(mcevans, lachouffe, 3.5).
+sert(mcevans, leffe, 2.5).
+sert(omnia, lachouffe, 4.5).
+sert(taverneflamande, lachti, 1.9).
+frequente(timoleon, mcevans).
+aime(timoleon, lachouffe).
+content(X) :- aime(X, Beer), frequente(X, Bar), sert(Bar, Beer, _).
+bonmarche(B) :- sert(B, _, P), P=<2.0.
+
+% Timoléon est-il content ?
+% content(timoleon)
+
+% Qui est content ?
+% content(X)

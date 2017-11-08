@@ -1,0 +1,1944 @@
+---------------------------------------------------------------------
+---- corrigé des TPs de l'enseignement
+--- Introduction aux bases de donnees relationnelles
+--- Licence 3 informatique, Université Lille 1, 2012-13
+--------------------------------------------------------------------
+
+----------------------------------------
+----- Celine Kuttler
+----- www.lifl.fr/~kuttler
+-----------------------------------------
+
+
+----------------------------------------------------------------------------
+--- corrigé TP1-------------------------------------------------------------
+----------------------------------------------------------------------------
+-- tool: relational algebra interpreter by Elmasri & Navathe
+
+
+-- exo1
+-- 1.1
+project[fnom] (fournisseurs);
+
+-- 1.2
+select[fad='Paris'] (fournisseurs);
+
+-- 1.3
+project[fnom] (select[fad='Paris'] (fournisseurs));
+
+-- 1.4
+project[anom](select[acoul='vert'] (articles));
+
+-- 1.5
+project[aid](select[prix<20](catalogue));
+
+-- 1.6
+project[fid](select[prix<20](catalogue));
+
+
+-- 1.7
+project[fid](select[prix<20 and prix>10](catalogue));
+
+-- 1.8
+(project[fid](select[prix>10](catalogue))) intersect (project[fid](select[prix<20](catalogue)));
+
+-- 1.9
+(project[aid](select[acoul='rouge'] (articles))) union
+(project[aid](select[acoul='vert'] (articles)))
+;
+
+pas de support pour OR dans expressions booleennes!
+
+-- 1.9
+contradiction logique: il n'existe pas de tels articles. 
+c'est pour voir ce que les etudiants font. 
+apes avoir fait l'union en 1.8, vont ils essayer avec
+l'intersection? ou avec une conjonction dans le test?
+
+
+
+
+--------------------- exo3
+--3.1
+
+project[anom](articles join catalogue);
+
+
+-- 3.2
+project[anom,prix,fnom](articles join catalogue join fournisseurs);
+
+-- 3.3
+(project[fid](catalogue join (select[acoul='rouge'](articles))));
+
+
+
+-- 3.4:
+
+-- les identifiants pour founisseurs d'articles a moins de 20 euros
+project[fid](select[prix<=20](catalogue));
+
+
+
+
+- 3.4: les noms
+- solution directe:
+project[fnom](select[prix<=20](fournisseurs join catalogue));
+
+- solution en copiant-collant la requete precedente, qui ne trouvait que les ids des fournisseurs
+project[fnom](fournisseurs join (project[fid](select[prix<=20](catalogue))));
+
+
+--  3.5
+(project[fid](catalogue)) minus (  project[fid](select[prix<=100](catalogue)));
+
+-- 3.6
+project[fnom,fad](fournisseurs join ((project[fid](catalogue)) minus (  project[fid](select[prix<=100](catalogue)))));
+
+--- 
+-- 3.7
+((project[aid](select[acoul='vert'] (articles)))
+times (project[aid](select[acoul='rouge'] (articles))));
+
+-- 3.8
+d'abord, verifier s'il en existe
+(project[aid](articles)) minus (project[aid](catalogue));
+
+-- 3.9
+project[anom](articles join ((project[aid](articles)) minus (project[aid](catalogue))));
+
+
+-- 3.10
+(project[fid](catalogue join (select[acoul='vert'](articles))))
+intersect 
+(project[fid](catalogue join (select[acoul='rouge'](articles))));
+
+-- 3.11
+(project[fnom](fournisseurs join catalogue join (select[acoul='noir'](articles))));
+
+-- 3.12
+(project[aid,fid]
+(select[aid=aid2 and fid<>fid2]
+(catalogue times rename[fid2,aid2,prix2](catalogue)))); 
+
+-- 3.13
+(
+((project[fid](fournisseurs))
+minus
+(project[fid](catalogue join (select[acoul='noir'](articles)))))
+minus
+(project[fid](catalogue join (select[acoul='argente'](articles)))));
+
+
+---------- 1a autrement ------- THIS SUCKS!!!
+- renommer aid en caid, dans catalogue
+rename[fid,caid,prix](catalogue)
+
+- toutes les combinaisons possibles de tuples de ARTICLES avec tuples de CATALOGUE
+-> quel est le schema? observer notamment les identifiants d'articles.
+-> (lire doc du produit cartesien, section 2.2.2)
+
+- du produit cartesien entre catalogue et articles, extraire les lignes dont articles.aid et catalogue.aid sont identiques.
+
+- du produit cartesien entre catalogue et articles, extraire les lignes concernant l'article avec l'identifiant 1
+ select[articles.aid=1](articles times catalogue);
+
+- quelle contrainte de l'outil RA observez-vous?
+
+- comment pourrait-on contourner ce probleme? 
+
+-> renommer aid dans une des relations
+rename[fid,caid,prix](catalogue);
+
+
+(articles times rename[fid,caid,prix](catalogue));
+
+-> ajouter une selection pour retenir uniquement les lignes ou catalogue.aid  et articles.aid sont egaux.
+
+-> finalement, avec cette construction, lister les noms des articles fournissables
+
+project[aid,anom](select[aid=caid](articles times(rename[fid,caid,prix](catalogue))));
+-----------
+
+
+----------------------------------------------------------------------------
+--- script de creation TP2b-------------------------------------------------------------
+----------------------------------------------------------------------------
+
+drop table articles;
+drop table fournisseurs;
+drop table catalogue;
+
+CREATE TABLE Articles(
+aid int,                     
+anom varchar(30), 
+acoul varchar(15) 
+);
+
+--
+
+CREATE TABLE Fournisseurs(
+fid int,
+fnom varchar(30),
+fad varchar(70)
+);
+
+--
+
+CREATE TABLE Catalogue(
+fid int,   
+aid int, 
+prix real 
+);
+
+
+
+---- attention: vous devrez determiner la longueur  pour les differents attributs du type varchar
+
+INSERT INTO Articles VALUES (1,'Left Handed Toaster Cover','rouge');
+INSERT INTO Articles VALUES (2,'Smoke Shifter End','noir');
+INSERT INTO Articles VALUES (3,'Acme Widget Washer','rouge');
+INSERT INTO Articles VALUES (4,'Acme Widget Washer','argente');
+INSERT INTO Articles VALUES (5,'Brake for Crop Circles Sticker','opaque');
+INSERT INTO Articles VALUES (6,'Anti-Gravity Turbine Generator','cyan');
+INSERT INTO Articles VALUES (7,'Anti-Gravity Turbine Generator','magenta');
+INSERT INTO Articles VALUES (8,'Fire Hydrant Cap','rouge');
+INSERT INTO Articles VALUES (9,'7 Segment Display','vert');
+--INSERT INTO Articles VALUES (10,'Microsd Card USB Reader','vert');
+--INSERT INTO Articles VALUES (11,'Ferrari F430','rouge');
+--INSERT INTO Articles VALUES (12,'Microsd Card USB Reader','rouge');
+-- ajouter pour Q12
+INSERT INTO Articles VALUES (13,'Microsd Card USB Reader','rose');
+INSERT INTO Articles VALUES (14,'Microsd Card USB Reader','superjaune');
+
+
+
+-------------
+INSERT INTO Fournisseurs VALUES (1,'kiventout','59 rue du Chti, F-75001 Paris');
+INSERT INTO Fournisseurs VALUES (2,'Big Red Tool and Die','4 My Way, Bermuda Shorts, OR 90305, USA');
+INSERT INTO Fournisseurs VALUES (3,'Perfunctory Parts','99999 Short Pier, Terra Del Fuego, TX 41299, USA');
+INSERT INTO Fournisseurs VALUES (4,'Alien Aircaft Inc.','2 Groom Lake, Rachel, NV 51902, USA');
+--INSERT INTO Fournisseurs VALUES (5,'Autolux','Piazza del Paris, 8, I-20121 Milano');
+
+-----------
+INSERT INTO Catalogue VALUES (1,1,36.10);
+INSERT INTO Catalogue VALUES (1,2,42.30);
+INSERT INTO Catalogue VALUES (1,3,15.30);
+INSERT INTO Catalogue VALUES (1,4,20.50);
+INSERT INTO Catalogue VALUES (1,5,20.50);
+INSERT INTO Catalogue VALUES (1,6,124.23);
+INSERT INTO Catalogue VALUES (1,7,124.23);
+INSERT INTO Catalogue VALUES (1,8,11.70);
+INSERT INTO Catalogue VALUES (1,9,75.20);
+INSERT INTO Catalogue VALUES (2,1,16.50);
+INSERT INTO Catalogue VALUES (2,7,0.55);
+INSERT INTO Catalogue VALUES (2,8,7.95);
+INSERT INTO Catalogue VALUES (3,8,12.50);
+INSERT INTO Catalogue VALUES (3,9,1.00);
+INSERT INTO Catalogue VALUES (4,4,57.3);
+INSERT INTO Catalogue VALUES (4,5,22.20);
+INSERT INTO Catalogue VALUES (4,8,48.6);
+-- INSERT INTO Catalogue VALUES (5,11,234555.67);
+--ajouter pour Q12
+INSERT INTO Catalogue VALUES (2,13,1.23);
+
+
+
+
+----------------------------------------------------------------------------
+--- corrigé TP2b-------------------------------------------------------------
+----------------------------------------------------------------------------
+
+
+----- exo1
+-- 1.1
+select fnom from fournisseurs;
+
+--1.1a
+select fnom as suppliername from fournisseurs;
+
+
+--1.2
+select * from fournisseurs where fad like '%Paris';
+-- paris may appear in street name!!!
+
+--1.3
+
+select fnom from fournisseurs where fad like '%Paris';
+ -- majuscules/minuscules
+
+--1.4 
+select anom from articles where acoul= 'vert' ;
+-- et quoi si la couleur est vertE?
+
+
+-- 1.5
+select  aid from catalogue where prix < 20;
+s)
+
+-- quel est l'effet du mot-cle distinct, lorsqu'il est ajoute a cette requete?
+
+--1.6
+select distinct fid from catalogue where prix < 20;
+
+-- 1.7 
+select distinct fid from catalogue where prix >= 10 and prix <= 20;
+
+select distinct fid from catalogue where prix between 10 and 20;
+
+-- expliquez l'effect du mot-cle distinct dans cette requete.
+
+-- 1.8
+
+(select  fid from catalogue where prix >= 10)
+intersect
+(select  fid from catalogue where prix <= 20);
+
+
+-- 1.9 
+
+select anom from articles where acoul= 'vert' or acoul='rouge';
+
+(select anom from articles where acoul= 'vert')
+union
+(select anom from articles where acoul= 'rouge');
+
+-- 1.10 
+-- les deux requetes suivante fournissent des resultats differents. a premiere vue, cela pourrait sembler paradoxe. expliquez pourquoi!
+
+select anom from articles where acoul= 'vert' and acoul='rouge';
+-- rien: parce que l'attribut acoul est atomaire, et ne peut donc pas avoir deux valeurs differentes.
+
+
+(select anom from articles where acoul= 'vert')
+intersect
+(select anom from articles where acoul= 'rouge');
+-- deux articles differents avec meme noms, mais couleurs independantes
+
+--------------------------
+--1.11. bonus
+-- le prix de l'article le plus cher, avec la technique de l'exo supplementaire en AR.
+
+select max(prix) from catalogue;
+
+--
+(select prix from catalogue)
+except  
+(select 
+c2.prix
+from 
+  catalogue c1, catalogue c2
+where
+	c1.prix > c2.prix	
+);
+---
+
+select prix from catalogue where prix >= ALL (select prix from catalogue);
+
+-- -
+select c1.prix from catalogue c1 where not exists (select c2.prix from catalogue c2 where c2.prix > c1.prix );
+
+
+----- exo 3
+
+--- EXO 3.
+
+-- 3.1 
+
+select anom 
+from articles, catalogue
+where 
+articles.aid = catalogue.aid;
+
+select anom 
+from articles a, catalogue c
+where 
+a.aid = c.aid;
+
+select anom
+from articles join catalogue on articles.aid=catalogue.aid;
+
+-- 3.2 
+select 
+       a.nom, c.prix, f.fnom
+from 
+     articles a , catalogue c, fournisseurs f
+where 
+      a.aid=c.aid and c.fid=f.fid
+
+
+-- 3.3 
+select 
+       c.fid
+from 
+     articles a join catalogue c 
+     on a.aid = c.aid 
+where 
+      a.acol='rouge';
+
+
+
+-- 3.4 
+select 
+       fournisseurs.fid
+from 
+     fournisseurs  join catalogue on fournisseurs.fid=catalogue.fid
+where
+     a.aprix<20
+;
+
+-- 3.5 
+
+(select
+	distinct fournisseurs.fid	
+from 
+     fournisseurs  join catalogue on fournisseurs.fid=catalogue.fid
+where
+	prix >= 10000
+)
+except
+(
+select
+	distinct fournisseurs.fid	
+from 
+     fournisseurs  join catalogue on fournisseurs.fid=catalogue.fid
+where
+	prix < 10000
+)
+;
+
+-- alternative
+
+select  fid
+from fournisseurs
+where 
+fid in 
+    (
+    select fid 
+     from catalogue
+     where
+	prix >= 10000
+    )
+and 
+fid not in
+(
+select fid from catalogue 
+where prix < 10000
+);
+
+-- 
+select  fid
+from fournisseurs f
+where 
+f.fid in  (select fid    from catalogue    where prix >= 10000)
+and
+not exists (select * from catalogue where catalogue.fid = f.fid and prix < 10000);
+
+-- 3.6 
+
+-- 3.7 
+
+select a1.aid, a2.aid
+from articles a1, articles a2
+where 
+      a1.acoul like 'vert' 
+      and a2.acoul like 'rouge'
+;
+
+
+-- 3.8 
+
+select aid from articles where aid not in (select aid from catalogue);
+
+
+
+-- 3.9 
+
+select anom from articles where aid not in (select aid from catalogue);
+
+-- 3.10 
+
+(
+select c.fid
+from catalogue c join  articles a
+on c.aid=a.aid
+where 
+a.acoul='vert'
+)
+intersect
+(
+select c.fid
+from catalogue c join  articles a
+on c.aid=a.aid
+where 
+a.acoul='rouge'
+)
+;
+
+
+
+-- 3.11
+
+select f.fnom
+from catalogue c, fournisseurs f, articles a
+where 
+c.fid=f.fid and a.aid=c.aid and a.acoul='noir';
+
+
+-- 3.12 
+select 
+       distinct c1.aid
+from 
+     catalogue c1, catalogue c2
+where 
+c1.aid=c2.aid and c1.fid < 2.fid;
+
+-- 3.13 
+
+select fnom 
+from fournisseurs
+where fid not in 
+(
+select fid 
+from catalogue c join articles a on c.aid=a.aid
+where 
+acoul='noir' or acoul='argente'
+);
+
+
+
+
+
+
+----------------------------------------------------------------------------
+--- corrigé TP4-------------------------------------------------------------
+----------------------------------------------------------------------------
+
+begin transaction;
+\echo ----------------------------------------------
+\echo      	DEBUT DE LA CREATION DES SCHEMAS
+\echo ----------------------------------------------
+\echo ----------------------------------------------
+\echo      creation du schema de la table machine
+\echo ----------------------------------------------
+create table machine (
+    id integer not null primary key,
+    nom varchar(25) not null,
+    prix float,
+    description text
+);
+
+\echo ----------------------------------------------
+\echo      creation du schema de la table fournisseurs
+\echo ----------------------------------------------
+create table fournisseur (
+    id integer not null primary key,
+    nom varchar(25) not null,
+    adresse varchar(25),
+    ville varchar(25),
+    telephone char(15),
+    fax char(15)
+);
+
+\echo ----------------------------------------------
+\echo      creation du tableau pieces
+\echo ----------------------------------------------
+create table piece (
+    id integer not null primary key,
+    nom varchar(25) not null,
+    stock integer,
+    fournisseur integer references fournisseur(id) 
+    				on delete set null 
+    				on update cascade
+);
+
+\echo ----------------------------------------------
+\echo      creation du schema de la table machine_piece
+\echo ----------------------------------------------
+create table machine_piece (
+    machine integer not null references machine(id)
+						on delete cascade 
+						on update cascade,
+    piece integer not null references piece(id)
+						on delete cascade 
+						on update cascade,
+    quantite integer,
+    primary key(machine,piece)
+);
+
+\echo ----------------------------------------------
+\echo      creation du  schema de la table Commandes
+\echo ----------------------------------------------
+create table commandes (
+    numero integer not null primary key,
+    date_livraison date not null,
+    quantite integer not null,
+    client varchar(30),
+    machine integer not null references machine(id)
+						on delete cascade 
+						on update cascade
+);
+
+\echo ----------------------------------------------
+\echo      	FIN DE LA CREATION DU SCHEMA
+\echo ----------------------------------------------
+
+\echo ----------------------------------------------
+\echo      	DEBUT DE LA CREATION DES INSTANCES
+\echo ----------------------------------------------
+
+\echo ----------------------------------------------
+\echo      	   instance de la table machines
+\echo ----------------------------------------------
+insert into machine values (1, 'presse', 35000, NULL);
+insert into machine values (2, 'moissonneuse-batteuse', 50000, NULL);
+
+\echo ----------------------------------------------
+\echo      	   instance de la table fournisseurs
+\echo ----------------------------------------------
+insert into fournisseur values (11, 'Recharches Agricoles', 'Via America', 'Boulogne', '0801234567     ', '0801234568     ');
+insert into fournisseur values (22, 'MultiRoues', 'Viale Dante', 'Tourcoing', '0797654321     ', '0797654311     ');
+insert into fournisseur values (33, 'Pouce Vert', NULL, 'Lille', '097112345      ', '097134567      ');
+
+\echo ----------------------------------------------
+\echo      	   istanza tabella Pezzi
+\echo ----------------------------------------------
+insert into piece values (111, 'arbre', 80, 11);
+insert into piece values (222, 'van', 54, null);
+insert into piece values (333, 'roulement', 78, 22);
+insert into piece values (444, 'batteur', 54, null);
+insert into piece values (555, 'ascenceur', 15, 33);
+-- 
+insert into piece values (666, 'embrayage', 37, 11);
+insert into piece values (777, 'structure primaire', 20, null);
+insert into piece values (888, 'roue', 70, 22);
+
+\echo ----------------------------------------------
+\echo      	   instance de la table machine_pieces
+\echo ----------------------------------------------
+insert into machine_piece values (1, 111, 1);
+insert into machine_piece values (1, 333, 10);
+insert into machine_piece values (1, 666, 4);
+insert into machine_piece values (1, 888, 4);
+insert into machine_piece values (1, 777, 1);
+insert into machine_piece values (2, 222, 1);
+insert into machine_piece values (2, 444, 1);
+insert into machine_piece values (2, 555, 1);
+insert into machine_piece values (2, 888, 4);
+insert into machine_piece values (2, 777, 1);
+
+\echo ----------------------------------------------
+\echo      	   instance de la table commandes
+\echo ----------------------------------------------
+insert into commandes values (11, '2009-03-15',15,'Mecanique Lucien',1);
+insert into commandes values (12, '2009-03-30',50,'Saponnier',1);
+insert into commandes values (13, '2009-04-30',10,'Chicoree',1);
+insert into commandes values (21, '2009-04-30',30,'Chicoree',2);
+insert into commandes values (22, '2009-05-20',1,'Gremise',1);
+
+
+commit;
+----------------- queries
+\echo --------------------------------------------------------------------------------------------------------------------------
+\echo               Q1
+\echo    Noms et prix des machines produites par l atelier
+\echo --------------------------------------------------------------------------------------------------------------------------
+select nom, prix
+from machine;
+
+\echo --------------------------------------------------------------------------------------------------------------------------
+\echo              Q2
+\echo    Nom e ville des fournisseurs de roues
+\echo --------------------------------------------------------------------------------------------------------------------------
+select fournisseur.nom,ville
+from fournisseur join piece on piece.fournisseur=fournisseur.id
+where piece.nom='roue';
+
+\echo --------------------------------------------------------------------------------------------------------------------------
+\echo              Q3
+\echo   Nom des pieces qui font la presse, avec les quantites
+\echo --------------------------------------------------------------------------------------------------------------------------
+select piece.nom,quantite
+from machine join machine_piece on machine.id=machine
+           join piece on piece=piece.id
+where machine.nom='presse';
+
+\echo --------------------------------------------------------------------------------------------------------------------------
+\echo               Q4
+\echo    Quantite totale des pieces pour la frabrication d une presse
+\echo --------------------------------------------------------------------------------------------------------------------------
+select sum(quantite) as tot_pezzi_presse
+from machine join machine_piece on machine.id=machine
+where machine.nom='presse';
+
+\echo --------------------------------------------------------------------------------------------------------------------------
+\echo               Q5
+\echo    Nom des pieces communes a la presse et moissonneuse-batteuse
+\echo --------------------------------------------------------------------------------------------------------------------------
+select piece.nom
+from machine join machine_piece on machine.id=machine
+	join piece on piece=piece.id
+where machine.nom='presse'
+intersect
+select piece.nom
+from machine join machine_piece on machine.id=machine
+	join piece on piece=piece.id
+where machine.nom='moissonneuse-batteuse';
+
+\echo --------------------------------------------------------------------------------------------------------------------------
+\echo               Q6
+\echo    Noms des pieces qui composoent la moissonneuse-batteuse avec quantite
+\echo    ainsi que nom et ville des fournisseurs
+\echo --------------------------------------------------------------------------------------------------------------------------
+
+select piece.nom,quantite,fournisseur.nom,ville
+from machine join machine_piece on machine.id=machine
+	join piece on piece=piece.id
+	left join fournisseur on piece.fournisseur=fournisseur.id
+where machine.nom='moissonneuse-batteuse';	
+
+\echo --------------------------------------------------------------------------------------------------------------------------
+\echo              Q7
+\echo    Commandes a livrer avant le 30 avril, par machine
+\echo --------------------------------------------------------------------------------------------------------------------------
+
+select machine.nom, sum(commandes.quantite)
+from machine join commandes on machine.id=commandes.machine
+where date_livraison<='2009-04-30'
+group by machine.id, machine.nom;	
+
+
+
+----------------------------------------------------------------------------
+--- corrigé TP5-------------------------------------------------------------
+--- la boutique
+--- version SQL
+----------------------------------------------------------------------------
+--- Q 1
+--m-- les couleurs "rares", pour lesquelles il n'y a qu'un  seul article 
+select acoul as CouleursRares
+from articles
+group by acoul
+having count(*) = 1
+order by acoul;
+
+
+-- exists
+
+select a.acoul as CouleursRares
+from articles a
+where not exists 
+(select * from articles a2
+where a.acoul=a2.acoul and a.aid<>a2.aid);
+
+
+-- Q2 article en rouge, qui n'existe pas en vert
+
+select a.aid 
+from articles a
+where a.acoul='rouge'
+and not exists (select * from articles a2 where a2.anom = a.anom and a.acoul='vert');
+
+-- not in
+
+select a.aid, a.anom 
+from articles a
+where a.acoul='rouge'
+and a.anom not in (select anom from articles where  a.acoul='vert');
+
+-- ensembliste (au niveau des nom)
+
+-- Q3+Q9 articles offerts par  au moins 2 fournisseurs
+select distinct c.aid 
+from catalogue c
+where exists (
+      select *
+      from catalogue c2
+      where c2.aid=c.aid and c2.fid<>c.fid
+      );
+
+
+select aid 
+from catalogue 
+group by aid 
+having count(*) > 1
+order by aid;
+
+
+-- version avec jointure deja faite
+
+
+
+---Q4  vendeur offrant tous les articles
+-- il faut enlever les articles 10, 11 et 12 du catalogue pour obtenir un resultat
+
+select distinct f.fid as CeluiQuiVendTout
+from fournisseurs f
+where 
+not exists 
+(
+--- A: trouver article que vendeur avec identifiant C.fid ne vend pas
+select *
+from articles a
+where not exists 
+      (
+      ---- determiner si l'article avec identifiant a.aid 
+      ---- est vendu par le vendeur avec C.fid
+      select *
+      from catalogue c1 
+      where c1.fid=f.fid 
+      	        and c1.aid = a.aid
+      )
+);
+
+-- avec count
+
+select distinct c.fid as CeluiQuiVendTout
+from catalogue c
+group by fid
+having count(*) = (select count(*) from articles);
+
+
+-- Q5 articles en rouge, exclusivement, 
+
+select a.anom from articles a where a.acoul='rouge' 
+and 
+not exists 
+(
+select *
+from articles a2 where a2.anom=a.anom and a2.acoul not like 'rouge'
+);
+
+-- autre: 
+
+( select distinct a.anom from articles a where a.acoul='rouge' ) except 
+( select distinct a.anom from articles a where a.acoul<>'rouge' ) ;
+
+-- not in
+select a.anom from articles a where a.acoul='rouge' 
+and  a.anom not in
+(
+select a2.anom
+from articles a2 where a2.anom=a.anom and a2.acoul not like 'rouge'
+);
+
+
+--- Q 6
+--f - classement: par article, le nombre de fournisserus.
+-- l'article avec le plus grand nombre de vendeurs en tete de liste.
+-- schema du resultat: (Article,Nombre de Vendeurs).
+select  anom as "Article", acoul as "Couleur", count(*)   as "Nombre de fournisseurs"
+from articles left join catalogue       
+on articles.aid=catalogue.aid                                               
+ group by articles.anom      , articles.acoul                                                
+    order by count(*) desc;
+
+-- pas d'autre
+
+--- Q 7
+--m-- par couleur, sous condition que plus d'un article ce cette couleur soit fournissable,le prix moyen, en excluant la ferrari rouge.
+-- trier  par prix moyen decroissant
+select  acoul as Couleur , avg (prix) as PrixMoyen 
+from articles, catalogue
+where articles.aid=catalogue.aid and anom not like 'Ferrari%'
+group by acoul 
+having count (distinct articles.aid) > 1
+order by avg(prix) desc;
+
+
+--- Q 8
+--m-- le nom du vendeur de l'article le plus cher
+select f.fnom
+from catalogue c, fournisseurs f
+where c.fid=f.fid
+and c.prix=(select max(prix) from catalogue);
+
+-- exists
+
+select c1.fid
+from catalogue c1
+where not exists
+(select * from catalogue
+where c2.prix>c1.prix
+);
+
+--- Q 9 (voir Q3)
+
+
+
+-- Q10 fournisseur offrant tous les articles rouges
+
+-- avec count
+select f.fid,f.fnom
+from fournisseurs f, catalogue c, articles a
+where f.fid=c.fid and c.aid=a.aid and acoul='rouge'
+group by f.fid,f.fnom
+having count(*) = (select count(*) from articles where acoul='rouge');
+
+-- avec EXISTS
+select distinct c.fid , c.fnom
+from fournisseurs c 
+where not exists
+(
+select *
+from articles a
+where a.acoul='rouge' and
+      not exists (
+      select * 
+      from catalogue c1 
+      where c1.aid = a.aid and
+      	    	   c1.fid=c.fid
+      )
+);
+
+
+
+--- Q 11
+--m-- selectionnner le nom du fournisseur qui vend le meme article en plus d'une couleur,
+-- et le nom de l'artcile concerné.
+select  fnom, anom
+from articles, catalogue,fournisseurs
+where articles.aid = catalogue.aid and catalogue.fid=fournisseurs.fid
+group by catalogue.fid, anom,fnom
+having count (distinct articles.acoul) > 1;
+
+-- avec EXISTS
+select  distinct f.fnom, a.anom
+from articles a, catalogue c,fournisseurs f
+where 
+a.aid = c.aid and 
+c.fid=f.fid and
+exists (
+select * 
+from articles a2,catalogue c2
+where a2.aid=c2.aid
+and a2.anom = a.anom
+and c2.fid=f.fid
+and a2.acoul<>a.acoul
+);
+
+
+
+
+
+--- Q 12
+--m ---- noms des articles fournissables, 
+-- avec prix maximal et minimal, 
+-- uniquement pour les articles avec plus d'un vendeur
+
+select  anom,  min(prix), max(prix) 
+from articles , catalogue 
+where articles.aid=catalogue.aid 
+group by articles.anom 
+having count(distinct fid)>1;
+
+-- exists 
+
+select  a.anom,  min(prix), max(prix) 
+from articles a, catalogue c
+where a.aid=c.aid 
+and exists (select * from catalogue c2 where c2.aid=a.aid and c2.fid<>c.fid)
+group by a.anom ;
+
+
+
+--- Q 13
+---- peut etre fusione avec Q14
+--d-- le nombre d'articles offert par le vendeur avec le plus grand choix d'articles, et le nom de ce fournisseur
+
+-- en cours, >= ALL etait presente uniquement pour la clause WHERE. 
+-- on peut dire aux etudiants que le predicat fonctionne de la meme maniere pour la clause HAVING.
+
+-- v1
+select fid,count(*)
+from catalogue
+group by fid,fnom
+having count(*)>=ALL (select count (*) from catalogue group by fid);
+
+-- combinaison Q13+Q14 
+select c.fid,fnom,count(*)
+from catalogue c ,fournisseurs f
+where c.fid=f.fid
+group by c.fid,fnom
+having count(*)>=ALL (select count (*) from catalogue group by fid);
+
+---v2
+
+select max (n.c) 
+from  (
+      select count (*)  as c, fid
+      from catalogue
+      group by fid 
+) 
+as n;
+
+-- v3, with view
+
+create view ChoixParFournisseur(fid,nbarticles)
+as 
+     select fid, count (*)  
+      from catalogue
+      group by fid 
+;
+
+select fid,nbarticles 
+from ChoixParFournisseur
+where nbarticle = 
+(select max(nbarticles) from ChoixParFournisseur);
+---
+
+
+--------Q14
+select fnom 
+from catalogue c, fournisseurs f
+where c.fid=f.fid
+group by c.fid, fnom
+having count(*) >= all 
+       (select count(*) from catalogue group by fid);
+
+
+--- Q 15
+---m-- selectionnner les noms des articles offerts par un seul vendeur, toutes couleurs confondues
+
+select  anom
+from articles a,  catalogue c, fournisseurs f
+where a.aid = c.aid and c.fid=f.fid
+group by anom
+having count (distinct fnom) =1;
+
+select a.anom 
+from articles a,catalogue c
+where 
+a.aid=c.aid and 
+not exists 
+(
+select * from catalogue c2,articles a2 
+where 
+c2.aid=a2.aid
+and c2.fid<>c.fid
+and a2.anom=a.anom
+);
+
+
+--- Q16 vendeur sans articles
+
+select fid,fnom from fournisseurs where fid not in 
+(select fid from catalogue);
+
+
+--- Q17
+-- couleurs, pour lesquelles il existe un article non fournissable
+
+-- pour une reponse non-vide, il faut ajouter la ligne suivante a la base:
+
+--INSERT INTO Articles VALUES (13,'Ferari F430','superjaune');
+
+select distinct a.acoul 
+from articles a 
+where exists 
+       (select * 
+       from articles a2 
+       where a2.acoul=a.acoul
+       and a2.aid not in 
+       (select aid from catalogue)
+       );
+
+
+---Q18 articles coutant au moins 100 euros , chez tous les vendeurs
+-- (comparaison au niveau des aids)
+
+select distinct c.aid
+ from catalogue c 
+where c.prix >= 100
+and not exists
+(select * from catalogue c2 where c2.aid=c.aid and c2.prix<100 );
+
+
+--Q19 articles uniquement vendus par kiventout
+
+-- articles (aids et anom) vendus par kiventout, et personne d'autre
+
+
+select anom , acoul 
+from articles where 
+aid in	(
+       select c.aid from catalogue c, fournisseurs f
+       where f.fnom = 'kiventout' and c.fid=f.fid
+       	     and
+	            not exists (
+		           select * from catalogue c2 where c2.aid=c.aid and f.fid<>c2.fid
+       			   )
+			   );
+
+
+--- une version, utilisant UNIQUEMENT des exists, sans jointure, sans autre chose.
+--- simplement pour vous montrer que c'est possible de le faire! 
+---- si vous comprenez cette version, c'est suffisant. :-)
+
+select a.anom, a.aid from articles a 
+where 
+--- cet article est vendu par kiventout
+exists	( 
+select * 
+from catalogue c
+where c.aid=a.aid and exists (select * from fournisseurs f where f.fid=c.fid and f.fnom='kiventout')
+)
+and not exists
+( --- il n'y a pas pas d'autre vendeur que kiventout pour ce article
+----
+--- "il n'y a pas de vendeur dont le nom d'est pas kiventout" 
+-- est logiquement equivalent a
+---"tous les  vendeurs de cet article s'appellent kiventout"
+select * 
+from catalogue c
+where c.aid=a.aid and exists (select * from fournisseurs f where f.fid=c.fid and f.fnom NOT like 'kiventout')
+)
+;
+
+
+-- Q20 articles disponbles aux etats-unis, uniquement
+
+
+select distinct c.aid 
+from catalogue c 
+where exists 
+      (select * from fournisseurs f
+      where f.fid=c.fid and  fad like '%USA')
+and not exists
+    (select * from fournisseurs f, catalogue c2
+    where 
+    c2.aid=c.aid
+    and f.fid=c2.fid 
+    and  f.fad not like '%USA');
+
+
+----------------------------------------------------------------------------
+--- corrigé TP5-------------------------------------------------------------
+--- la boutique
+--- version TRC
+----------------------------------------------------------------------------
+
+Q1--- couleurs rares
+
+{t | exists a1 in articles : a1[acoul]=t[acoul]
+     forall a2 in articles: a1[acoul]=a2[acoul]  implies a1[aid]=a2[aid]
+}
+
+==
+
+{t | exists a1 in articles : a1[acoul]=t[acoul]
+     not exists a2 in articles: not (
+     	 	      		     a1[acoul]=a2[acoul]  implies a1[aid]=a2[aid]
+     )
+}
+
+== (implication as disjunction)
+
+{t | exists a1 in articles : a1[acoul]=t[acoul]
+     not exists a2 in articles: not (
+     	 	      		     a1[acoul] <> a2[acoul]  or a1[aid]=a2[aid]
+     )
+}
+
+== de morgan
+{t | exists a1 in articles : a1[acoul]=t[acoul]
+     not exists a2 in articles: 
+     	 	      		     a1[acoul]=a2[acoul]  and a1[aid] <> a2[aid] 
+     )
+}
+
+select a1.acoul
+from articles a1
+where not exists 
+(select * in articles a2 where a1.acoul=a2.acoul and a1.aid<>a2.aid)
+
+--- Q2 articles rouges, qui n'existent pas en vert
+-- on s'interesse aux articles rouge,
+-- pour lesquels tous les autres articles du catalogue du meme nom ont une autre couleur que vert.
+
+{t | exists a1 in articles a1[aid]=t[aid] and   a1[acoul]='rouge ' 
+     	       forall a2 in articles : a1[anom]=a2[anom] => a2[acoul]<>'vert'
+   }
+
+== implication as disjunction
+{t | exists a1 in articles a1[aid]=t[aid] and   a1[acoul]='rouge ' 
+     	       forall a2 in articles : a1[anom]<>a2[anom] or  a2[acoul]<>'vert'
+   }
+
+== forall P as  (not exists not p)
+{t | exists a1 in articles a1[aid]=t[aid] and   a1[acoul]='rouge ' 
+     	       not exists a2 in articles : NOT( a1[anom]<>a2[anom] or  a2[acoul]<>'vert')
+   }
+
+== de morgan
+{t | exists a1 in articles a1[aid]=t[aid] and   a1[acoul]='rouge ' 
+     	       not exists a2 in articles : a1[anom]=a2[anom] and  a2[acoul]='vert')
+   }
+
+select a1.nom
+from articles a1
+where a1.acoul='rouge' and 
+not exists (select * from articles a2 where a1.anom=a2.anom and a2.acoul='vert')
+
+==
+
+=======================Q3+Q9
+
+{t | exists a1 in catalogue: t[aid]=a1[aid] and exists a2 in catalogue: a1[aid]=a2[aid] and a1[fid]=a2.fid}
+
+=================== 
+Q4: vendeur offrant tous les articles
+
+{t | exists f in fournisseurs t[fid]=f[fid]  
+      for all a in articles: exists c in catalogue (c[aid]=a[aid] and c[fid]=f[fid])
+   }
+
+==
+
+{t|  exists f in fournisseurs t[fid]=f[fid]  
+     not exists a in articles: not ( 
+						exists c in catalogue (c[aid]=a[aid] and c[fid]=f[fid])
+							)
+}
+
+
+
+select distinct f.fid as CeluiQuiVendTout
+from fournisseurs f
+where 
+not exists 
+(
+--- A: trouver article que vendeur avec identifiant C.fid ne vend pas
+select *
+from articles a
+where not exists 
+      (
+      ---- determiner si l'article avec identifiant a.aid 
+      ---- est vendu par le vendeur avec C.fid
+      select *
+      from catalogue c1 
+      where c1.fid=f.fid 
+      	        and c1.aid = a.aid
+      )
+);
+
+
+--- Q 8
+--m-- le nom du vendeur de l'article le plus cher
+
+{ t | exists c1 in catalogue t[fid]=c1[aid]
+      	      for all c2 in catalogue: c2[prix]<=c1[prix]
+  }
+
+==
+
+{ t | exists c1 in catalogue t[fid]=c1[fid]
+      	      not exists c2 in catalogue: c2[prix] > c1[prix]
+  }
+
+select c1.fid
+from catalogue c1
+where not exists
+(select * from catalogue
+where c2.prix>c1.prix
+);
+
+
+--- Q 11
+--m-- selectionnner le nom du fournisseur qui vend le meme article en plus d'une couleur,
+
+
+{ t | exists c in catalogue, exists a in articles, exists f in fournisseur : 
+     a[aid]=c[aid] and f[fid]=c[fid] and t[fnom]=f[fnom] and
+     		  exists c2 in catalogue, a2 in articles : 
+		  	 as[aid]=c2[aid] and c2[fid]=c[fid] and a2[anom]=a[anom]
+			 and a2[acoul]<>a[acoul]
+
+  }
+
+
+
+----------------------------------------------------------------------------
+--- -------------------------------------------------------------
+--- TP6: la compagnie aerienne
+--- creation de la base
+----------------------------------------------------------------------------
+
+drop table if exists avions;
+drop table if exists employes;
+drop table if exists certifications;
+drop table if exists vols;
+
+CREATE TABLE avions(
+aid int,
+anom varchar(30),
+portee int);
+
+INSERT INTO avions VALUES(1,'Boeing 747-400',8430);
+INSERT INTO avions VALUES(2,'Boeing 737-800',3383);
+INSERT INTO avions VALUES(3,'Airbus A340-300',7120);
+INSERT INTO avions VALUES(4,'British Aerospace Jetstream 41',1502);
+INSERT INTO avions VALUES(5,'Embraer ERJ-145',1530);
+INSERT INTO avions VALUES(6,'SAAB 340',2128);
+INSERT INTO avions VALUES(7,'Piper Archer III',520);
+INSERT INTO avions VALUES(8,'Tupolev 154',4103);
+INSERT INTO avions VALUES(16,'Schwitzer 2-33',30);
+INSERT INTO avions VALUES(9,'Lockheed L1011',6900);
+INSERT INTO avions VALUES(10,'Boeing 757-300',4010);
+INSERT INTO avions VALUES(11,'Boeing 777-300',6441);
+INSERT INTO avions VALUES(12,'Boeing 767-400ER',6475);
+INSERT INTO avions VALUES(13,'Airbus A320',2605);
+INSERT INTO avions VALUES(14,'Airbus A319',1805);
+INSERT INTO avions VALUES(15,'Boeing 727',1504);
+INSERT INTO avions VALUES(16,'Airbus A380-800ER',18001);
+
+
+------------------------------------------------------------------
+create table employes(
+eid int,
+enom varchar(30),
+salaire int
+);
+
+INSERT INTO employes VALUES(242518965,'Ivonne Boulala',120433);
+INSERT INTO employes VALUES(141582651,'Anael Klein',178345);
+INSERT INTO employes VALUES(011564812,'Joris Robillard',153972);
+INSERT INTO employes VALUES(567354612,'Laura Giacco',256481);
+INSERT INTO employes VALUES(552455318,'Patricia Jones',101745);
+INSERT INTO employes VALUES(550156548,'Victor Goron',205187);
+INSERT INTO employes VALUES(390487451,'Linda Mariencourt',212156);
+INSERT INTO employes VALUES(274878974,'Valentin Owczarek',99890);
+INSERT INTO employes VALUES(254099823,'Brahim Akouz',24450);
+INSERT INTO employes VALUES(356187925,'Astelia Massamba',44740);
+INSERT INTO employes VALUES(355548984,'Hugo Ermenidis',212156 );
+INSERT INTO employes VALUES(310454876,'Boubacar Diallo',212156);
+INSERT INTO employes VALUES(489456522,'Justin Dutoit',27984);
+INSERT INTO employes VALUES(489221823,'Nadir Trabelsi',23980);
+INSERT INTO employes VALUES(548977562,'Ulysses Boulala',84476);
+INSERT INTO employes VALUES(310454877,'Ceyhun Ozugur',33546);
+INSERT INTO employes VALUES(142519864,'Teresa Klatzer',227489);
+INSERT INTO employes VALUES(269734834,'Ana Bozianu',289950);
+INSERT INTO employes VALUES(287321212,'Mengmeng Zhao',48090);
+INSERT INTO employes VALUES(552455348,'Rachid El Amrani',152013);
+INSERT INTO employes VALUES(248965255,'Perrine Honore',43723);
+INSERT INTO employes VALUES(159542516,'Maxence Gens',48250);
+INSERT INTO employes VALUES(348121549,'Catalin Daniel Ramirez',32899);
+INSERT INTO employes VALUES(090873519,'Hakim Taleb',32021);
+INSERT INTO employes VALUES(486512566,'Simon Jeunechamp',43001);
+INSERT INTO employes VALUES(619023588,'Jennifer Thomas',54921);
+INSERT INTO employes VALUES(015645489,'Camille Girard',18050);
+INSERT INTO employes VALUES(556784565,'Etienne Renard',205187);
+INSERT INTO employes VALUES(573284895,'Tommy Carpentier',114323);
+INSERT INTO employes VALUES(574489456,'Nicolas Baudin',105743);
+INSERT INTO employes VALUES(574489457,'Oussama Moulana',20);
+
+----------------------------------------------------------
+create table certifications(
+eid int,
+aid int
+);
+
+
+INSERT INTO certifications VALUES(567354612,1);
+INSERT INTO certifications VALUES(567354612,2);
+INSERT INTO certifications VALUES(567354612,10);
+INSERT INTO certifications VALUES(567354612,11);
+INSERT INTO certifications VALUES(567354612,12);
+INSERT INTO certifications VALUES(567354612,15);
+INSERT INTO certifications VALUES(567354612,7);
+INSERT INTO certifications VALUES(567354612,9);
+INSERT INTO certifications VALUES(567354612,3);
+INSERT INTO certifications VALUES(567354612,4);
+INSERT INTO certifications VALUES(567354612,5);
+INSERT INTO certifications VALUES(552455318,2);
+INSERT INTO certifications VALUES(552455318,14);
+INSERT INTO certifications VALUES(550156548,1);
+INSERT INTO certifications VALUES(550156548,12);
+INSERT INTO certifications VALUES(390487451,3);
+INSERT INTO certifications VALUES(390487451,13);
+INSERT INTO certifications VALUES(390487451,14);
+INSERT INTO certifications VALUES(274878974,10);
+INSERT INTO certifications VALUES(274878974,12);
+INSERT INTO certifications VALUES(355548984,8);
+INSERT INTO certifications VALUES(355548984,9);
+INSERT INTO certifications VALUES(310454876,8);
+INSERT INTO certifications VALUES(310454876,9);
+INSERT INTO certifications VALUES(548977562,7);
+INSERT INTO certifications VALUES(142519864,1);
+INSERT INTO certifications VALUES(142519864,11);
+INSERT INTO certifications VALUES(142519864,12);
+INSERT INTO certifications VALUES(142519864,10);
+INSERT INTO certifications VALUES(142519864,3);
+INSERT INTO certifications VALUES(142519864,2);
+INSERT INTO certifications VALUES(142519864,13);
+INSERT INTO certifications VALUES(142519864,7);
+INSERT INTO certifications VALUES(269734834,1);
+INSERT INTO certifications VALUES(269734834,2);
+INSERT INTO certifications VALUES(269734834,3);
+INSERT INTO certifications VALUES(269734834,4);
+INSERT INTO certifications VALUES(269734834,5);
+INSERT INTO certifications VALUES(269734834,6);
+INSERT INTO certifications VALUES(269734834,7);
+INSERT INTO certifications VALUES(269734834,8);
+INSERT INTO certifications VALUES(269734834,9);
+INSERT INTO certifications VALUES(269734834,10);
+INSERT INTO certifications VALUES(269734834,11);
+INSERT INTO certifications VALUES(269734834,12);
+INSERT INTO certifications VALUES(269734834,13);
+INSERT INTO certifications VALUES(269734834,14);
+INSERT INTO certifications VALUES(269734834,15);
+INSERT INTO certifications VALUES(552455318,7);
+INSERT INTO certifications VALUES(556784565,5);
+INSERT INTO certifications VALUES(556784565,2);
+INSERT INTO certifications VALUES(556784565,3);
+INSERT INTO certifications VALUES(573284895,3);
+INSERT INTO certifications VALUES(573284895,4);
+INSERT INTO certifications VALUES(573284895,5);
+INSERT INTO certifications VALUES(574489456,8);
+INSERT INTO certifications VALUES(574489456,6);
+INSERT INTO certifications VALUES(574489457,7);
+INSERT INTO certifications VALUES(242518965,2);
+INSERT INTO certifications VALUES(242518965,10);
+INSERT INTO certifications VALUES(141582651,2);
+INSERT INTO certifications VALUES(141582651,10);
+INSERT INTO certifications VALUES(141582651,12);
+INSERT INTO certifications VALUES(011564812,2);
+INSERT INTO certifications VALUES(011564812,10);
+INSERT INTO certifications VALUES(356187925,6);
+INSERT INTO certifications VALUES(159542516,5);
+INSERT INTO certifications VALUES(159542516,7);
+INSERT INTO certifications VALUES(090873519,6);
+
+------------------------------------------------------------------
+
+
+create table vols(
+vid int,
+dep varchar(30),
+arr varchar(30),
+distance int,
+h_dep timestamp,
+h_arr timestamp,
+prix real
+);
+
+INSERT INTO vols VALUES(99,'Los Angeles','Washington D.C.',2308,'2011-04-12 09:30','2011-04-12 21:40',235.98);
+INSERT INTO vols VALUES(13,'Los Angeles','Chicago',1749,'2011-04-12 08:45','2011-04-12 20:45',220.98);
+INSERT INTO vols VALUES(346,'Los Angeles','Dallas',1251,'2011-04-12 11:50','2011-04-12 19:05',225.43);
+INSERT INTO vols VALUES(387,'Los Angeles','Boston',2606,'2011-04-12 07:03','2011-04-12 17:03',261.56);
+INSERT INTO vols VALUES(7,'Los Angeles','Sydney',7487,'2011-04-12 22:30','2011-04-14 6:10',1278.56);
+INSERT INTO vols VALUES(2,'Los Angeles','Tokyo',5478,'2011-04-12 12:30','2011-04-13 15:55',780.99);
+INSERT INTO vols VALUES(33,'CDG','NOU',17000,'2011-04-12 09:15','2011-04-14 11:15',3750.23);
+INSERT INTO vols VALUES(34,'CDG','NOU',17000,'2011-04-12 12:45','2011-04-14 15:18',4250.98);
+INSERT INTO vols VALUES(76,'Chicago','Los Angeles',1749,'2011-04-12 08:32','2011-04-12 10:03',220.98);
+INSERT INTO vols VALUES(68,'Chicago','New York',802,'2011-04-12 09:00','2011-04-12 12:02',202.45);
+INSERT INTO vols VALUES(7789,'Madison','Detroit',319,'2011-04-12 06:15','2011-04-12 08:19',120.33);
+INSERT INTO vols VALUES(701,'Detroit','New York',470,'2011-04-12 08:55','2011-04-12 10:26',180.56);
+INSERT INTO vols VALUES(702,'Madison','New York',789,'2011-04-12 07:05','2011-04-12 10:12',202.34);
+INSERT INTO vols VALUES(4884,'Madison','Chicago',84,'2011-04-12 22:12','2011-04-12 23:02',112.45);
+INSERT INTO vols VALUES(2223,'Madison','Pittsburgh',517,'2011-04-12 08:02','2011-04-12 10:01',189.98);
+INSERT INTO vols VALUES(5694,'Madison','Minneapolis',247,'2011-04-12 08:32','2011-04-12 09:33',120.11);
+INSERT INTO vols VALUES(304,'Minneapolis','New York',991,'2011-04-12 10:00','2011-04-12 1:39',101.56);
+INSERT INTO vols VALUES(149,'Pittsburgh','New York',303,'2011-04-12 09:42','2011-04-12 12:09',116.50);
+
+
+
+----------------------------------------------------------------------------
+--- corrigé TP6-------------------------------------------------------------
+--- la compagnie aerienne
+----------------------------------------------------------------------------
+
+-- COMPAGNIE AERIENNE
+------------------------------------------------------
+
+-- Q1
+
+SELECT C.eid, MAX (A.portee) 
+FROM Certifications C, Avions A 
+WHERE C.aid = A.aid
+GROUP BY C.eid 
+HAVING	(COUNT (*) > 3);
+
+
+-----------------------------------------------------
+-- Q2
+
+   SELECT DISTINCT E.enom 
+   FROM employes  E
+   WHERE E.salaire <	 
+ ( 
+SELECT MIN (V.prix) 
+FROM Vols V
+WHERE V.dep = 'CDG' 
+AND  V.arr = 'NOU' 
+);
+
+---- alternative 1
+select e.enom, e.eid
+from employes e
+where e.salaire < ALL
+(
+	select prix from vols v
+	where v.dep='CDG' and v.arr='NOU'
+);
+
+----- alternative 2
+select e.enom, e.eid
+from employes e
+where not exists
+(
+	select prix
+	from vols v
+	where v.prix<e.salaire and v.dep='CDG' and v.arr='NOU'
+);
+
+
+
+--- Q3
+---Quelles routes (départ et destination) 
+---peuvent \^etre volées par tous les pilotes
+---gagnant plus de 100 000 euros?
+
+select v.dep, v.arr,v.distance
+from vols v 
+where 
+v.distance <= ALL (select max (a.portee)
+				from employes e, certifications c, avions a
+				where c.eid=e.eid and c.aid=a.aid and e.salaire>=100000
+				group by e.eid)
+order by distance
+;
+
+
+----
+
+select v.dep, v.arr,v.distance
+from vols v 
+where not exists
+-- il n'y a pas de pilote...
+ (select *
+ from employes e,certifications c, avions a
+ where c.eid=e.eid and c.aid=a.aid and e.salaire>=100000
+ group by e.eid 
+ having v.distance > max(a.portee)
+ )
+order by distance;
+
+
+
+
+
+--- Q4
+SELECT E.enom
+FROM Employes E, Certifications C, Avions A 
+WHERE C.aid = A.aid AND E.eid = C.eid 
+GROUP BY E.eid,  E.enom
+HAVING EVERY (A.portee > 1500) AND COUNT (*) > 1
+order by E.enom;
+
+-- alternative
+SELECT distinct E.enom
+FROM Employes E, Certifications C, Avions A
+WHERE 
+E.eid = C.eid  
+      and A.aid=C.eid 
+      and A.portee>=1500
+      and not exists 
+      	  (select * 
+      	  from certifications c, avions a
+      	  where c.aid=a.aid and c.eid=e.eid and a.portee <1500
+      	  )
+order by E.enom;
+
+
+---Q5
+SELECT E.enom
+FROM Employes E, Certifications C, Avions A 
+WHERE C.aid = A.aid AND E.eid = C.eid 
+GROUP BY E.eid,  E.enom
+HAVING EVERY (A.portee > 1500) AND COUNT (*) >= 3;
+
+select distinct e.enom
+from employes e, certifications c, avions a
+where 
+e.eid=c.eid and c.aid=a.aid and a.portee > 1500
+and exists (
+			select * from certifications c2, avions a2
+			where c2.aid=a2.aid and a2.aid<>a.aid and c2.eid=e.eid and a2.portee>1500
+			and exists (
+			select * from certifications c3, avions a3
+			where c3.aid=a3.aid and a3.aid<>a.aid and a3.aid<>a2.aid and c3.eid=e.eid and a3.portee>1500
+			)
+			)	    
+and not exists (
+      select * from certifications c, avions a where a.aid=c.aid and c.eid=e.eid and a.portee<=1500
+      );
+
+
+
+---Q6
+
+SELECT  E.enom
+FROM Employes E, Certifications C, Avions A 
+WHERE C.aid = A.aid AND E.eid = C.eid 
+GROUP BY E.eid, E.enom
+HAVING EVERY (A.portee > 1500) AND bool_or (A.anom like 'Boeing%');
+
+
+
+
+
+-- Q7 
+
+select E.enom, E.eid
+from employes e
+where 
+salaire=
+	(select max(salaire) 
+	from employes 
+	where salaire<>(select max(salaire) from employes)
+);
+
+
+--Q8 
+-- Affichez les noms des pilotes qui peuvent piloter des avions d’une port ́ee sup ́erieure `a 2000km, 
+--mais qui ne sont certifi ́es pour aucun Boeing.
+
+select distinct E.eid, E.enom 
+from employes E
+where 
+	E.eid in (
+			select eid 
+	      	    	from certifications c, avions a 
+			where a.aid=c.aid and a.portee>2000)
+and 
+    E.eid not in 
+       (
+       select eid 
+       from certifications c, avions a 
+       where a.aid=c.aid and a.anom like 'Boeing%'
+       )
+order by E.eid
+;
+
+select distinct E.eid, E.enom 
+from employes E
+where exists
+	 (
+			select * 
+	      	    	from certifications c, avions a 
+			where a.aid=c.aid and a.portee>2000 and c.eid=E.eid)
+and not exists
+       (
+       select *
+       from certifications c, avions a 
+       where a.aid=c.aid and a.anom like 'Boeing%' and c.eid=E.eid
+       )
+;
+
+
+--- seems equivalent to me, but there's a bug
+
+select distinct E.eid, E.enom 
+from employes E, certifications c,avions A
+where 
+      e.eid=c.eid and c.aid=a.aid 
+group by E.eid, E.enom
+having 
+ bool_and(a.anom not like 'Boeing% ') 
+--- and bool_or(a.portee>2000)
+order by E.eid;
+--- 20 lines
+
+--- vs 10 lines by:
+-- debugging
+select distinct E.eid, E.enom 
+from employes E, certifications c, avions a
+where c.aid=c.aid and c.eid=e.eid  
+and    c.aid not in 
+       (
+       select distinct a.aid 
+       from  avions a 
+       where a.anom like 'Boeing%'
+       )
+--and c.eid in
+-- (select distinct c.eid
+-- from certifications c, avions a
+-- where a.aid=c.aid and a.portee>2000)
+;
+-----------
+
+select distinct E.eid, E.enom 
+from employes E, certifications c,avions A
+where 
+      e.eid=c.eid and c.aid=a.aid 
+group by E.eid, E.enom
+having   bool_and(a.anom not like 'Boeing% ');
+
+
+--- Q9
+
+---- BUG: dans la moyennes, les revenu des pilotes sont pris en compte aussi 
+----souvent qu'ils ont des certifications (5x pour 5 certifications)
+-----------
+-- SELECT E.enom, E.salaire
+-- FROM employes E
+-- WHERE 
+-- E.eid NOT IN      
+--       (SELECT  C.eid FROM Certifications C) ---- les pilotes
+-- AND 
+-- E.salaire > 
+-- 	 (SELECT AVG (E1.salaire)
+-- 	 FROM employes E1, certifications c1
+--          where e1.eid=c1.eid
+-- )       
+-- ;
+---
+
+SELECT E.enom, E.salaire
+FROM employes E
+WHERE 
+E.eid NOT IN      
+      (SELECT  C.eid FROM Certifications C) ---- les pilotes
+AND 
+E.salaire > 
+	 (SELECT AVG (salaire)
+	 FROM employes where eid in (select eid from certifications)
+)       
+;
+
+
+
+--- Q10
+
+SELECT RevPilotes.avg - RevEmployes.avg as difference
+FROM 
+(
+	SELECT AVG(E.salaire) AS avg
+	FROM employes E
+	WHERE E.eid in 
+	      (SELECT DISTINCT C.eid FROM Certifications C)
+) 
+AS RevPilotes,
+(
+	SELECT AVG(E1.salaire) AS avg
+	FROM employes E1
+) 
+AS RevEmployes;
+
+------------------------------ autres requetes sur la compagnie aerienne
+
+--- Q3
+--revenu max et min de pilotes
+
+select min(salaire),max(salaire)
+from employes e, certifications c
+where c.eid=e.eid 
+
+-- portees min et max d'avions pour chaque pilote est certifie
+select e.eid, min(portee), max(portee), min(salaire)
+from employes e, certifications c, avions a
+where c.eid=e.eid and c.aid=a.aid
+group by e.eid
+order by min(salaire);
+
+--- verification Q3-----------------------------------
+-- pour les pilotes gagnant >100kE, eid, portee maximale de certification, et revenu
+select e.eid,  max(portee), min(salaire)
+from employes e, certifications c, avions a
+where c.eid=e.eid and c.aid=a.aid and e.salaire>=100000
+group by e.eid;
+
+select * from vols where distance<=3383;
+
+-- distances des vols
+select distance from vols order by distance;
+
+
+-- portees min et max d'avions pour lesquels un pilote gagnant >100000  est certifie
+select min(portee), max(portee)
+from employes e, certifications c, avions a
+where c.eid=e.eid and c.aid=a.aid and e.salaire>=100000;
+
+-- route  pouvant etre effectue par tous les pilotes gagant > 100 000
+select v.dep, v.arr, v.distance
+from vols v 
+where 
+v.distance <= ALL (
+select max (a.portee)
+from employes e, certifications c, avions a
+where c.eid=e.eid and c.aid=a.aid and e.salaire>=100000
+group by e.eid)
+;
+
+-- route ne pouvant etre effectuée par aucun pilote gagnant >100kE
+-- Q3b
+select distinct v.dep , v.arr,v.distance
+from vols v
+where  not exists
+(--- un pilote gagnant >= 100 000
+	select * from employes e,certifications c, avions a
+	where  c.eid=e.eid and a.aid=c.aid and e.salaire >= 100000
+	       	     and a.portee >= v.distance
+
+);
+
+
+
+--------------------------------------------------------
+---Exo 2.3 -
+
+SELECT E.enom --, E.eid
+FROM Employes E, Certifications C, Avions A 
+WHERE C.aid = A.aid AND E.eid = C.eid
+GROUP BY E.enom
+HAVING EVERY (A.portee > 1500)
+order by e.enom;
+
+----- alternative 1
+
+SELECT E.enom -- , E.eid
+FROM Employes E, Certifications C, Avions A 
+WHERE C.aid = A.aid AND E.eid = C.eid
+GROUP BY  E.enom -- E.eid
+HAVING Min (A.portee) > 1500
+order by e.enom;
+
+
+------ alternative 2 
+
+SELECT distinct e.enom --, e.eid
+from Employes E, Certifications C
+where C.eid=E.eid and
+ not exists
+(select * 
+from certifications c, avions a
+where c.eid=e.eid and c.aid=a.aid and portee <=1500)
+order by e.enom;
+
+
+---------------------------------------------------
+----- Q4
+
+SELECT E.enom
+FROM Employes E, Certifications C, Avions A 
+WHERE C.aid = A.aid AND E.eid = C.eid 
+GROUP BY E.eid,  E.enom
+HAVING EVERY (A.portee > 1500) AND COUNT (*) > 1;
+
+----------------------------------------------------
+------ Exo 2.5-
+
+
+
+---------------------------------
+
+-------------------------------------------------------------------------
+--- Examen de decembre 2012
+------------------------------------------
+
+-- script de creation
+
+--
+---------------------------------------------------------------------------
+
+
+---------------------------------------------------------------------------
+--	Script file to generate the tables Sailors, Boats, and Reservation
+--	used in Chapter 5 of the book Database Management Systems by
+--	Raghu Ramakrishnan and Johannes Gehrke.
+--
+--	Hjalmtyr Hafsteinsson, september 2010.
+---------------------------------------------------------------------------
+
+drop table if exists skippers cascade;
+drop table if exists bateaux cascade;
+drop table if exists reservations cascade;
+
+
+-- creations
+
+create table skippers(
+        sid integer,
+        snom varchar(30),
+        niveau integer,
+        age integer,
+        primary key(sid)
+        );
+
+create table bateaux(
+        bid integer,
+        bnom varchar(30),
+        couleur varchar(10),
+        primary key(bid)
+        );
+
+create table reservations(
+        sid integer,
+        bid integer,
+        jour date,
+        primary key(sid,bid,jour),
+        foreign key(sid) references skippers,
+        foreign key(bid) references bateaux
+        );
+
+
+-- inserts
+
+insert into skippers (sid, snom, niveau, age)
+        values (22, 'Dustin', 7, 45.0);
+insert into skippers (sid, snom, niveau, age)
+        values (29, 'Brutus', 1, 33.0);
+insert into skippers (sid, snom, niveau, age)
+        values (31, 'Lubber', 8, 55.5);
+insert into skippers (sid, snom, niveau, age)
+        values (32, 'Andy', 8, 25.5);
+insert into skippers (sid, snom, niveau, age)
+        values (58, 'Rusty', 10, 35.0);
+insert into skippers (sid, snom, niveau, age)
+        values (64, 'Horatio', 7, 35.0);
+insert into skippers (sid, snom, niveau, age)
+        values (71, 'Zorba', 10, 16.0);
+insert into skippers (sid, snom, niveau, age)
+        values (74, 'Horatio', 9, 35.0);
+insert into skippers (sid, snom, niveau, age)
+        values (85, 'Art', 3, 25.5);
+insert into skippers (sid, snom, niveau, age)
+        values (95, 'Bob', 3, 63.5);
+
+insert into bateaux (bid, bnom, couleur)
+        values (101, 'Interlake', 'blue');
+insert into bateaux (bid, bnom, couleur)
+        values (102, 'Interlake', 'red');
+insert into bateaux (bid, bnom, couleur)
+        values (103, 'Clipper', 'green');
+insert into bateaux (bid, bnom, couleur)
+        values (104, 'Marine', 'red');
+
+insert into reservations (sid, bid, jour)
+        values (22, 101, '10/10/12');
+insert into reservations (sid, bid, jour)
+        values (22, 102, '10/10/12');
+insert into reservations (sid, bid, jour)
+        values (22, 103, '10/8/12');
+insert into reservations (sid, bid, jour)
+        values (22, 104, '10/7/12');
+insert into reservations (sid, bid, jour)
+        values (31, 102, '11/10/12');
+insert into reservations (sid, bid, jour)
+        values (31, 103, '11/6/12');
+insert into reservations (sid, bid, jour)
+        values (31, 104, '11/12/12');
+insert into reservations (sid, bid, jour)
+        values (64, 101, '9/5/12');
+insert into reservations (sid, bid, jour)
+        values (64, 102, '9/8/12');
+--insert into reservations (sid, bid, jour)
+--        values (64, 102, '10/8/12');
+insert into reservations (sid, bid, jour)
+        values (74, 103, '9/8/12');
+
+
+---- queries exam 12/2012
+
+
+--- voir corrigé d'examen

@@ -1,0 +1,47 @@
+On construit le diagramme conceptuel à partir des données de l'énoncé donnant le
+fichier diagramme_conceptuel.jpg, puis on transforme ce diagramme conceptuel en
+diagramme logique à l'aide de l'algorithme ci-dessous et des types d'associations.
+
+Les classes sont reliées par des associations. Les types de ces associations sont
+définies grâce aux cardinalités.
+
+Dans les cardinalité :
+  Le minimum ne peut être que 0 ou 1 sachant que 0 représente 0 tuple au minimum
+  et 1 représente 1 ou plusieurs tuples au minimum.
+  Le maximum ne peut être que 1 ou * sachant que 1 représente 1 tuple au maximum
+  et * représente plusieurs tuples (au moins 2) au maximum.
+
+Exemple de cardinalités :
+  Chaque pièce provient au minimum de 0 fournisseur et au maximum de 1 fournisseur
+  d'où la cardinalité 0..1 pour l'association "est fabriqué par" côté Pieces.
+  Chaque fournisseur fournit au minimum 1 pièce et au maximum 3 pièces d'où la
+  cardinalité 1..* pour l'association "est fabriqué par" côté Fournisseurs.
+
+Type d'associations :
+  On les définit en regardant les maximums des deux cardinalités de l'association.
+  L'association est de type 1-1 si les maximums sont (1,1).
+  L'association est de type 1-m si les maximums sont (1,*).
+  L'association est de type m-m si les maximums sont (*,*).
+  (m comme many)
+  Les types d'associations permettent de savoir ce qu'il faut transcrire pour passer
+  du diagramme conceptuel au diagramme logique.
+
+Algorithme pour transformer un diagramme conceptuel en diagramme logique :
+  1/ Translater les classes en relations
+  2/ Translater les hiérarchies (ommis dans ce cours)
+  3/ Translater les attributs multivariés
+       On crée de nouvelles tables pour éviter d'avoir des ensembles dans des
+       valeurs d'attributs
+  4/ Translation des associations m-m
+       On crée une nouvelle table entre les deux relations m-m avec des clés
+       étrangères pour les relier. La clé primaire de cette nouvelle table est
+       formée des clés étrangères
+  5/ Translation des associations 1-m
+       On ajoute une clé étrangère à la relation dont la cardinalité max vaut 1 se
+       référant à l'autre relation
+  6/ Translation des association 1-1
+       On choisit la clé étrangère en priorité comme étant la clé primaire de la
+       relation dont la cardinalité min vaut 1 (le choix est cependant libre)
+  7/ Ajout de contraintes
+       On le fait dans la création des tables en SQL mais pas dans le diagramme ici
+  8/ Design des schémas externes (ommis dans ce cours)

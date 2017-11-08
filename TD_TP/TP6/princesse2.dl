@@ -1,0 +1,27 @@
+enigme.
+% Contenu des cellules (princesse ou tigre)
+contenu(princesse).
+contenu(tigre).
+
+% Affiche 1 :
+% Il y a une princesse dans la cellule 1 et un tigre dans la cellule 2
+affiche_1(princesse,tigre).
+
+% Affiche 2 :
+% Il y a une princesse dans l'une des cellules et un tigre dans l'autre
+affiche_2(princesse,tigre).
+affiche_2(tigre,princesse).
+
+% L'affiche 1 est vraie et l'affiche 2 est fausse
+solutions(X,Y) :- contenu(X), contenu(Y), affiche_1(X,Y), not(affiche_2(X,Y)).
+
+% L'affiche 1 est fausse et l'affiche 2 est vraie
+alt_solutions(X,Y) :- contenu(X), contenu(Y), not(affiche_1(X,Y)), affiche_2(X,Y).
+
+% On trouve les solutions ainsi (c'est solutions ou alt_solutions) : 
+bonneSolution(X,Y) :- solutions(X,Y).
+bonneSolution(X,Y) :- alt_solutions(X,Y).
+
+% Ces formules répondent aux questions 15 à 18.
+% Lancer bonneSolution(X,Y) dans DES pour afficher le résultat.
+

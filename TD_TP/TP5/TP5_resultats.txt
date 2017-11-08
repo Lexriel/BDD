@@ -1,0 +1,158 @@
+Question 1
+----------
+
+    eid    | max  
+-----------+------
+ 552455318 | 3383
+ 274878974 | 6475
+ 556784565 | 7120
+ 242518965 | 4010
+  11564812 | 4010
+ 355548984 | 6900
+ 550156548 | 8430
+ 269734834 | 8430
+ 567354612 | 8430
+ 573284895 | 7120
+ 574489456 | 4103
+ 142519864 | 8430
+ 310454876 | 6900
+ 159542516 | 1530
+ 390487451 | 7120
+ 141582651 | 6475
+(16 rows)
+
+
+Question 2
+----------
+
+      enom       |    eid    
+-----------------+-----------
+ Oussama Moulana | 574489457
+(1 row)
+
+
+Question 3
+----------
+
+     dep     |       arr       | distance 
+-------------+-----------------+----------
+ Madison     | Chicago         |       84
+ Madison     | Minneapolis     |      247
+ Pittsburgh  | New York        |      303
+ Madison     | Detroit         |      319
+ Detroit     | New York        |      470
+ Madison     | Pittsburgh      |      517
+ Madison     | New York        |      789
+ Chicago     | New York        |      802
+ Minneapolis | New York        |      991
+ Los Angeles | Dallas          |     1251
+ Los Angeles | Chicago         |     1749
+ Chicago     | Los Angeles     |     1749
+ Los Angeles | Washington D.C. |     2308
+ Los Angeles | Boston          |     2606
+(14 rows)
+
+
+Question 4
+----------
+
+       enom        
+-------------------
+ Anael Klein
+ Astelia Massamba
+ Boubacar Diallo
+ Etienne Renard
+ Hakim Taleb
+ Hugo Ermenidis
+ Ivonne Boulala
+ Joris Robillard
+ Linda Mariencourt
+ Nicolas Baudin
+ Tommy Carpentier
+ Valentin Owczarek
+ Victor Goron
+(13 rows)
+
+
+Question 5
+----------
+
+       enom        
+-------------------
+ Anael Klein
+ Boubacar Diallo
+ Etienne Renard
+ Hugo Ermenidis
+ Ivonne Boulala
+ Joris Robillard
+ Linda Mariencourt
+ Nicolas Baudin
+ Tommy Carpentier
+ Valentin Owczarek
+ Victor Goron
+(11 rows)
+
+
+Question 6
+----------
+
+       enom        
+-------------------
+ Anael Klein
+ Etienne Renard
+ Ivonne Boulala
+ Joris Robillard
+ Valentin Owczarek
+ Victor Goron
+(6 rows)
+
+
+Question 7
+----------
+
+     enom     |    eid    | salaire 
+--------------+-----------+---------
+ Laura Giacco | 567354612 |  256481
+(1 row)
+
+
+Question 8
+----------
+
+    eid    |       enom        | salaire 
+-----------+-------------------+---------
+  90873519 | Hakim Taleb       |   32021
+ 310454876 | Boubacar Diallo   |  212156
+ 355548984 | Hugo Ermenidis    |  212156
+ 356187925 | Astelia Massamba  |   44740
+ 390487451 | Linda Mariencourt |  212156
+ 573284895 | Tommy Carpentier  |  114323
+ 574489456 | Nicolas Baudin    |  105743
+(7 rows)
+
+
+Question 9
+----------
+
+       enom       | salaire 
+------------------+---------
+ Rachid El Amrani |  152013
+(1 row)
+
+
+Question 10
+-----------
+
+     difference     
+--------------------
+ 35320.612903225806
+(1 row)
+
+
+Question 11
+-----------
+
+   dep   |  arr   
+---------+--------
+ Madison | Dallas
+(1 row)

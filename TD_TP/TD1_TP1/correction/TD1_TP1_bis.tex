@@ -1,0 +1,236 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc} %%pour taper directement les lettres accentuées
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{anysize} %%pour pouvoir mettre les marges qu'on veut
+\marginsize{2.5cm}{2.5cm}{2.5cm}{2.5cm}
+
+\usepackage{indentfirst} %%pour que les premier paragraphes soient aussi indentés
+\usepackage{amsfonts,amssymb,amsmath,amsthm}
+\usepackage{hyperref}
+\hypersetup{pdfstartview=XYZ}
+\usepackage{enumerate}
+\usepackage{array}
+\usepackage{verbatim}
+\usepackage{eurosym}
+\usepackage{amssymb}
+
+\newtheoremstyle{exostyle}
+{\topsep}% espace avant
+{\topsep}% espace apres
+{}% Police utilisee par le style de thm
+{}% Indentation (vide = aucune, \parindent = indentation paragraphe)
+{\bfseries}% Police du titre de thm
+{.}% Signe de ponctuation apres le titre du thm
+{\newline}% Espace apres le titre du thm (\newline = linebreak)
+{\thmname{#1}\thmnumber{ #2}\thmnote{. \normalfont{\textit{#3}}}}% composants du titre du thm : \thmname = nom du thm, \thmnumber = numéro du thm, \thmnote = sous-titre du thm
+
+\theoremstyle{exostyle}
+\newtheorem{exercice}{Exercice}
+
+\newenvironment{questions}{
+
+\begin{enumerate}[\hspace{12pt}\bfseries\itshape 1.]}{
+\end{enumerate}
+
+} %mettre un 1 à la place du a si on veut des numéros au lieu de lettres pour les questions 
+
+
+
+
+
+
+
+
+
+
+\begin{document}
+
+\centering{\Large \textbf{TD1 - TP1 bis : Intro. aux Bases de Données Relationnelles}}
+
+\noindent\hrulefill
+\vspace{0.5cm}
+
+
+\begin{exercice}[Requêtes d'algèbre relationnelle (pour les plus sportifs)]
+
+Ne pas hésiter à recourir à des variables pour répondre aux requêtes demandées.
+
+\begin{questions}
+
+\item Afficher le prix de l'article le plus cher (maximum) :\\
+$\mathfrak{J}\ _{MAX\ prix}(catalogue)$\\
+Le MAX n'est pas implémenté sur RA. Nous allons donc devoir recoder le maximum à l'aide des opérations standard. En effectuant un produit cartésien de la relation catalogue sur elle-même, on peut rechercher les valeurs de prix qui sont strictement plus petites que celles de prix2. Seul le maximum ne sera pas dans le cas, il suffit alors de prendre la complétion de ce résultat pour obtenir la formule suivante. Schématiser un exemple de tables peut aider.\\
+$\pi_{prix}(catalogue) - \pi_{prix}(\sigma_{prix<prix2}(catalogue
+\times \rho_{fid,aid,prix2}(catalogue)))$
+\begin{verbatim}
+PROJECT[prix](catalogue)
+MINUS
+PROJECT[prix](SELECT[prix<prix2](catalogue
+                                 TIMES
+                                 RENAME[fid,aid,prix2](catalogue))
+             );
+\end{verbatim}
+
+\item Afficher le nom de l'article le plus cher (maximum) :\\
+$\pi_{anom}(\ _{anom}\ \mathfrak{J}\ _{MAX\ prix}(catalogue \star articles))$\\
+La requête suivante est équivalente :\\
+$\pi_{anom}(catalogue \star articles) -\newline \pi_{anom}(\sigma_{prix<prix2}(catalogue
+\times \rho_{fid2,aid2,prix2}(catalogue)) \star articles)$
+\begin{verbatim}
+PROJECT[anom](catalogue JOIN articles)
+MINUS
+PROJECT[anom](SELECT[prix<prix2](catalogue
+                                 TIMES
+                                 RENAME[fid2,aid2,prix2](catalogue))
+              JOIN
+              articles
+             );
+PROJECT[prix](catalogue)
+MINUS
+PROJECT[prix](SELECT[prix>prix2](catalogue
+                                 TIMES
+                                 RENAME[fid,aid,prix2](catalogue))
+             );
+\end{verbatim}
+
+\item Afficher le nom du fournisseur de l'article le moins cher (minimum) :\\
+$\pi_{fnom}(\ _{fnom}\ \mathfrak{J}\ _{MIN\ prix}(catalogue \star fournisseurs))$\\
+Le MIN n'est pas implémenté sur RA. La requête suivante est équivalente :\\
+$\pi_{fnom}(\pi_{fid,aid,prix}(catalogue)
+-\newline
+\pi_{fid,aid,prix}(\sigma_{prix>prix2}(catalogue) \times \rho_{fid2,aid2,prix2}(catalogue)))$
+\begin{verbatim}
+PROJECT[fnom](
+  (PROJECT[fid,aid,prix](catalogue)
+   MINUS
+   PROJECT[fid,aid,prix](SELECT[prix>prix2](catalogue
+                                            TIMES
+                                            RENAME[fid2,aid2,prix2](catalogue)
+                                           )
+                        )
+  )
+  JOIN
+  fournisseurs
+);
+\end{verbatim}
+
+\item Afficher les identifiants d'articles fournissables n'apparaissant pas dans la relation articles :\\
+$\pi_{aid}(catalogue) -\pi_{aid}(articles)$
+\begin{verbatim}
+PROJECT[aid](catalogue) MINUS PROJECT[aid](articles);
+\end{verbatim}
+On ne devrait pas trouver d'identifiants lorsque les contraintes de
+clés sont bien respectées. En effet, tout article devrait être
+référencé dans le catalogue par son identifiant. Trouver un article
+dans la relation articles dont l'identifiant n'existe pas dans le
+catalogue ne devrait pas être possible.
+
+\item Afficher les noms de fournisseurs n'ayant pas d'articles dans le catalogue :\\
+$\pi_{fnom}((\pi_{fid}(fournisseurs) -\pi_{fid}(catalogue)) \star fournisseurs)$
+\begin{verbatim}
+PROJECT[fnom]((PROJECT[fid](fournisseurs)
+               MINUS PROJECT[fid](catalogue)
+              )
+              JOIN
+              fournisseurs
+             );
+\end{verbatim}
+
+\item Afficher l'identifiant et le nom de l'article le plus cher de kiventout :\\
+$\ _{aid,anom}\ \mathfrak{J}\ _{MAX\ prix}(\sigma_{fnom='kiventout'}(fournisseurs) \star catalogue \star articles)$\\
+\`A l'aide d'une variable, on peut écrire cela:\\
+$kiventoutArticles = \sigma_{fnom='kiventout'}(fournisseurs) \star catalogue \star articles$\\
+$\ _{aid,anom}\ \mathfrak{J}\ _{MAX\ prix}(kiventoutArticles)$\\
+Le MAX n'est pas implémenté sur RA. La requête suivante est équivalente :\\
+$kiventoutArticles = \pi_{anom,aid,prix}(\sigma_{fnom='kiventout'}(fournisseurs) \star catalogue \star articles)$\\
+$produitCartesien = kiventoutArticles \times \rho_{anom2,aid2,prix2}(kiventoutArticles)$\\
+$\pi_{aid,anom}(kiventoutArticles - \pi_{anom,aid,prix}(\sigma_{prix<prix2}(produitCartesien)))$
+\begin{verbatim}
+PROJECT[aid,anom](
+  PROJECT[anom,aid,prix](
+    SELECT[fnom='kiventout'](fournisseurs)
+    JOIN
+    catalogue
+    JOIN
+    articles
+  )
+  MINUS
+  PROJECT[anom,aid,prix](
+    SELECT[prix<prix2](
+      PROJECT[anom,aid,prix](
+        SELECT[fnom='kiventout'](fournisseurs)
+        JOIN
+        catalogue
+        JOIN
+        articles
+      )
+      TIMES
+      RENAME[anom2,aid2,prix2](
+        PROJECT[anom,aid,prix](
+          SELECT[fnom='kiventout'](fournisseurs)
+          JOIN
+          catalogue
+          JOIN
+          articles
+        )
+      )
+    )
+  )
+);
+\end{verbatim}
+
+\item Afficher les identifiants d'articles qu'aucun fournisseurs ne vend à moins de 20\euro{} :\\
+$\pi_{aid}(catalogue) - \pi_{aid}(\sigma_{prix<20}(catalogue \star articles))$
+\begin{verbatim}
+PROJECT[aid](catalogue)
+MINUS
+PROJECT[aid](SELECT[prix<20](catalogue JOIN articles));
+\end{verbatim}
+
+
+\end{questions}
+\end{exercice}
+
+\begin{exercice}[\'Etude des opérations sur les relations]
+
+Rappelons que les relations $R_1$ et $R_2$ sont de tailles $N_1$ et
+$N_2$ avec $N_2>N_1>0$. Pour visualiser les résultats des questions de
+cet exercice, on se réfèrera au tableau suivant et on pourra
+représenter les relations $R_1$ et $R_2$ comme des ensembles pour
+distinguer les valeurs de $N_{min}$ et $N_{max}$ dans chacuns des
+cas.\\
+\phantom{1}
+
+\centering{
+\begin{tabular}{|c|c|c|l|}
+\hline
+\textbf{Expression} & $\mathbf{N_{min}}$ & $\mathbf{N_{max}}$ & \textbf{Suppositions sur les relations} \\
+\hline
+$R_1 \cup R_2$ & $N_2$ & $N_1+N_2$ & $R_1$ et $R_2$ doivent contenir les mêmes types de tuples \\
+\hline
+$R_1 \cap R_2$ & $0$ & $N_1$ & $R_1$ et $R_2$ doivent contenir les mêmes types de tuples \\
+\hline
+$R_1 - R_2$ & $0$ & $N_1$ & $R_1$ et $R_2$ doivent contenir les mêmes types de tuples \\
+\hline
+$R_2 - R_1$ & $N_2-N_1$ & $N_2$ & $R_1$ et $R_2$ doivent contenir les mêmes types de tuples \\
+\hline
+$R_1 \times R_2$ & $N_1\times N_2$ & $N_1\times N_2$ & $R_1$ et $R_2$ peuvent avoir des tuples différents \\
+\hline
+$\sigma_{a=5}(R_1)$ & $0$ & $N_1$ & $R_1$ doit contenir un attribut $a$ de type int \\
+\hline
+$\pi_{a}(R_1)$ & $1$ & $N_1$ & $R_1$ doit contenir un attribut $a$ de type int \\
+\hline
+\end{tabular}
+}
+
+\end{exercice}
+ 
+
+ 
+\end{document}
+
+
+

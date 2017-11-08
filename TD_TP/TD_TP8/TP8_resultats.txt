@@ -1,0 +1,72 @@
+Requête 1
+---------
+
+      nom_machine      |   prix   
+-----------------------+----------
+ Presse                | 35000.00
+ Moissonneuse-batteuse | 50000.00
+(2 rows)
+
+
+Requête 2
+---------
+
+ fournisseur |   ville   
+-------------+-----------
+ Multi Roues | Tourcoing
+(1 row)
+
+
+Requête 3
+---------
+
+     nom_piece      | qte_piece 
+--------------------+-----------
+ arbre              |         1
+ deroulement        |        10
+ embrayage          |         4
+ roue               |         4
+ structure primaire |         1
+(5 rows)
+
+
+Requête 4
+---------
+
+ nb_pieces_presse 
+------------------
+               20
+(1 row)
+
+
+Requête 5
+---------
+
+     nom_piece      
+--------------------
+ roue
+ structure primaire
+(2 rows)
+
+
+Requête 6
+---------
+
+     nom_piece      | qte_piece | fournisseur |   ville   
+--------------------+-----------+-------------+-----------
+ roue               |         4 | Multi Roues | Tourcoing
+ structure primaire |         1 |             | 
+ van                |         1 |             | 
+ batteur            |         1 |             | 
+ ascenseur          |         1 | Pouce Vert  | Lille
+(5 rows)
+
+
+Requête 7
+---------
+
+      nom_machine      | sum 
+-----------------------+-----
+ Presse                |  75
+ Moissonneuse-batteuse |  30
+(2 rows)

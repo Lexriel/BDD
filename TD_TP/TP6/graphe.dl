@@ -1,0 +1,125 @@
+graphe.
+% arêtes
+e(d,a).
+e(d,e).
+e(a,b).
+e(b,c).
+e(b,f).
+e(f,g).
+e(e,f).
+e(e,g).
+
+% paires de sommets connectés
+p(X,Y) :- e(X,Y).
+p(X,Z) :- e(X,Y), p(Y,Z).
+
+% définition récursive de chemins de longueur impaires et paires
+impair(X,Y) :- e(X,Y).
+pair(X,Z)   :- e(X,Y), impair(Y,Z).
+impair(X,Z) :- e(X,Y), pair(Y,Z).
+
+% shortest_path permet de trouver des chemins minimaux pour aller
+% d'un sommet X vers un sommet Y
+path(X,Y,1) :- e(X,Y).
+path(X,Y,L) :- path(X,Z,L0), e(Z,Y), count(e(A,B),Max), L0<Max, L is L0+1.
+shortest_path(X,Y,L) :- min(path(X,Y,Z), Z, L).
+
+% Question 10
+% -----------
+% cf début de fichier
+
+% Question 11
+% -----------
+% p(X,Y)
+% Cette requête renvoie :
+% {
+%   p(a,b),
+%   p(a,c),
+%   p(a,f),
+%   p(a,g),
+%   p(b,c),
+%   p(b,f),
+%   p(b,g),
+%   p(d,a),
+%   p(d,b),
+%   p(d,c),
+%   p(d,e),
+%   p(d,f),
+%   p(d,g),
+%   p(e,f),
+%   p(e,g),
+%   p(f,g)
+% }
+% Info: 16 tuples computed.
+
+% Question 12
+% -----------
+% Si on rajoute l'arête suivante à la base de données, on
+% crée un cycle :
+% e(c,d). 
+
+% Question 13
+% -----------
+% Le cycle a->b->c->d->a que j'ai rajouté à l'aide de la 
+% question 12 n'est traversé qu'une seule fois. En effet,
+% la commande p(X,Y) n'affiche qu'une fois chaque arête.
+
+% Question 14
+% -----------
+% cf prédicats impair au début fichier
+% impair(X,Y)
+% Cette requête renvoie :
+% {
+%   impair(a,b),
+%   impair(a,g),
+%   impair(b,c),
+%   impair(b,f),
+%   impair(d,a),
+%   impair(d,c),
+%   impair(d,e),
+%   impair(d,f),
+%   impair(d,g),
+%   impair(e,f),
+%   impair(e,g),
+%   impair(f,g)
+% }
+% Info: 12 tuples computed.
+
+% Remarque : enlever le cycle pour éviter trop d'affichages.
+% Le cycle créé par l'ajout de e(f,d). affiche quasiment tous
+% les chemins car cela crée un cycle de longueur 3 (impair).
+% A cause de cet ajout, impair(X,Y) affiche notamment e(f,g)
+% car on a un chemin f->d->e->f->g impair.
+
+% Requête donnant les chemins de longueur 3 :
+% DES> path(X,Y,3)
+
+% {                                           
+%   path(a,g,3),
+%   path(d,c,3),
+%   path(d,f,3),
+%   path(d,g,3)
+% }
+% Info: 4 tuples computed.          
+
+% Requête donnant la longueur des chemins les plus courts entre 
+% deux sommets :
+% DES> shortest_path(X,Y,L)
+
+% {                                           
+%   shortest_path(a,b,1),
+%   shortest_path(a,c,2),
+%   shortest_path(a,f,2),
+%   shortest_path(b,c,1),
+%   shortest_path(b,f,1),
+%   shortest_path(b,g,2),
+%   shortest_path(d,a,1),
+%   shortest_path(d,b,2),
+%   shortest_path(d,e,1),
+%   shortest_path(d,f,2),
+%   shortest_path(d,g,2),
+%   shortest_path(e,f,1),
+%   shortest_path(e,g,1),
+%   shortest_path(f,g,1)
+% }
+% Info: 14 tuples computed.          

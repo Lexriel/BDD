@@ -1,0 +1,175 @@
+DES-Datalog> %%%%%%%%%%%%
+DES-Datalog> % DATALOG
+DES-Datalog> %%%%%%%%%%%%
+DES-Datalog> 
+DES-Datalog> -- :-type(flight(origin:string,destination:string,time:real)).
+DES-Datalog> 
+DES-Datalog> -- /assert flight(london,ny,9).
+DES-Datalog> -- /assert flight(mad,par,1.5).
+DES-Datalog> -- /assert flight(par,ny,10.0).
+DES-Datalog> 
+DES-Datalog> -- :-type(travel(origin:string,destination:string,time:real)).
+DES-Datalog> -- /assert travel(X,Y,T) :- flight(X,Y,T).
+DES-Datalog> -- /assert travel(X,Y,T) :- flight(X,Z,T1), travel(Z,Y,T2), T=T1+T2.
+DES-Datalog> 
+DES-Datalog> -- % Assuming a flight between Madrid and London in 2 hours, how long will it take to reach New York from Madrid?
+DES-Datalog> -- % ?- flight(mad,london,2) => travel(mad,ny,T).
+DES-Datalog> 
+DES-Datalog> 
+DES-Datalog> %%%%%%%%%%%%
+DES-Datalog> % SQL
+DES-Datalog> %%%%%%%%%%%%
+DES-Datalog> 
+DES-Datalog> /hypothetical on
+Info: Hypothetical queries are already enabled.
+DES-Datalog> /show_compilations on
+Info: Display of compilations is already enabled.
+DES-Datalog> /compact_listings on
+Info: Compact listings are already enabled.
+DES-Datalog> 
+DES-Datalog> CREATE OR REPLACE TABLE flight(origin string, destination string, time real)
+DES-Datalog> --CREATE OR REPLACE TABLE travel(origin string, destination string, time real)
+DES-Datalog> 
+DES-Datalog> INSERT INTO flight VALUES('london','ny',9.0);
+Info: 1 tuple inserted.
+DES-Datalog> INSERT INTO flight VALUES('mad','par',1.5);
+Info: 1 tuple inserted.
+DES-Datalog> INSERT INTO flight VALUES('par','ny',10.0);
+Info: 1 tuple inserted.
+DES-Datalog> 
+DES-Datalog> 
+DES-Datalog> --CREATE VIEW travel(origin,destination,time) AS SELECT * FROM flight;
+DES-Datalog> CREATE OR REPLACE VIEW travel(origin,destination,time) AS WITH connected(origin,destination,time) AS SELECT * FROM flight UNION SELECT flight.origin,connected.destination,flight.time+connected.time FROM flight,connected WHERE flight.destination = connected.origin SELECT * FROM connected;
+Info: SQL statement compiled to:
+connected(A,B,C) :-
+  distinct(connected_3_1(A,B,C)).
+connected_3_1(A,B,C) :-
+  flight(A,B,C).
+connected_3_1(A,B,C) :-
+  flight(A,D,E),
+  connected(D,B,F),
+  C = E + F.
+Info: SQL statement compiled to:
+travel(A,B,C) :-
+  connected(A,B,C).
+DES-Datalog> 
+DES-Datalog> -- % ?- flight(mad,london,2) => travel(mad,ny,T).
+DES-Datalog> -- % Con esquema
+DES-Datalog> -- WITH flight(origin,destination,flight) AS 
+DES-Datalog> --        SELECT 'mad','london',2.0 
+DES-Datalog> -- SELECT time 
+DES-Datalog> -- FROM travel 
+DES-Datalog> -- WHERE origin='mad' AND destination='ny'
+DES-Datalog> 
+DES-Datalog> WITH flight(origin,destination,flight) AS SELECT 'mad','london',2.0 SELECT time FROM travel WHERE origin='mad' AND destination='ny'
+Info: SQL statement compiled to:
+flight(A,B,C) :-
+  C = 2.0,
+  B = london,
+  A = mad.
+Info: SQL statement compiled to:
+answer(A) :-
+  B = ny,
+  C = mad,
+  travel(C,B,A).
+answer(travel.time:number(float)) ->
+{
+  answer(11.0),
+  answer(11.5)
+}
+Info: 2 tuples computed.
+DES-Datalog> 
+DES-Datalog> -- % Sin esquema
+DES-Datalog> -- WITH flight AS SELECT 'mad','london',2.0 
+DES-Datalog> -- SELECT time 
+DES-Datalog> -- FROM travel 
+DES-Datalog> -- WHERE origin='mad' AND destination='ny'
+DES-Datalog> 
+DES-Datalog> -- % Más en general
+DES-Datalog> -- WITH Schema1 AS AssumedRelation1, 
+DES-Datalog> --      ... ,
+DES-Datalog> --      SchemaN AS AssumedRelationN
+DES-Datalog> -- SELECT ProjList 
+DES-Datalog> -- FROM Relation1, ... , RelationM
+DES-Datalog> 
+DES-Datalog> % Notas:
+DES-Datalog> % - Todas las relaciones nuevas se asumen temporalmente en el WITH según el estándar SQL
+DES-Datalog> % - En la propuesta, para añadir extensional o intensionalmente tuplas a una relación, 
+DES-Datalog> %   se usa el mismo nombre de una relación existente. El estándar SQL no lo soporta, claro
+DES-Datalog> 
+DES-Datalog> % Otro ejemplo.
+DES-Datalog> % Si sólo existe la relación flight y asumimos la relación travel:
+DES-Datalog> 
+DES-Datalog> DROP VIEW travel
+DES-Datalog> 
+DES-Datalog> -- WITH travel(origin,destination,time) AS 
+DES-Datalog> -- (SELECT * FROM flight) 
+DES-Datalog> -- UNION 
+DES-Datalog> -- (SELECT flight.origin,travel.destination 
+DES-Datalog> --  FROM flight, travel 
+DES-Datalog> --  WHERE flight.destination = travel.origin
+DES-Datalog> -- )
+DES-Datalog> -- SELECT * FROM travel;
+DES-Datalog> 
+DES-Datalog> /hypothetical off
+DES-Datalog> 
+DES-Datalog> WITH travel(origin,destination,time) AS (SELECT * FROM flight) UNION (SELECT flight.origin,travel.destination,flight.time+travel.time FROM flight, travel WHERE flight.destination = travel.origin) SELECT * FROM travel;
+Info: SQL statement compiled to:
+travel(A,B,C) :-
+  distinct(travel_3_1(A,B,C)).
+travel_3_1(A,B,C) :-
+  flight(A,B,C).
+travel_3_1(A,B,C) :-
+  flight(A,D,E),
+  travel(D,B,F),
+  C = E + F.
+Info: SQL statement compiled to:
+answer(A,B,C) :-
+  travel(A,B,C).
+answer(travel.origin:string(varchar),travel.destination:string(varchar),travel.time:number(float)) ->
+{
+  answer(london,ny,9.0),
+  answer(mad,ny,11.5),
+  answer(mad,par,1.5),
+  answer(par,ny,10.0)
+}
+Info: 4 tuples computed.
+DES-Datalog> 
+DES-Datalog> -- % Pero esto ya funciona en SQL estándar. Otro caso es que sólo existiese la vista:
+DES-Datalog> CREATE VIEW travel(origin,destination,time) AS SELECT * FROM flight
+Info: SQL statement compiled to:
+travel(A,B,C) :-
+  flight(A,B,C).
+DES-Datalog> 
+DES-Datalog> -- % Añadir la cláusula recursiva sería:
+DES-Datalog> /hypothetical on
+DES-Datalog> 
+DES-Datalog> -- WITH travel(origin,destination,time) AS 
+DES-Datalog> -- (SELECT flight.origin,travel.destination,flight.time+travel.time 
+DES-Datalog> --  FROM flight,travel 
+DES-Datalog> --  WHERE flight.destination = travel.origin
+DES-Datalog> -- )
+DES-Datalog> -- SELECT * FROM travel;
+DES-Datalog> WITH travel(origin,destination,time) AS (SELECT flight.origin,travel.destination,flight.time+travel.time FROM flight,travel  WHERE flight.destination = travel.origin) SELECT * FROM travel;
+Info: SQL statement compiled to:
+travel(A,B,C) :-
+  flight(A,D,E),
+  travel(D,B,F),
+  C = E + F.
+Info: SQL statement compiled to:
+answer(A,B,C) :-
+  travel(A,B,C).
+answer(travel.origin:string(varchar),travel.destination:string(varchar),travel.time:number(float)) ->
+{
+  answer(london,ny,9.0),
+  answer(mad,ny,11.5),
+  answer(mad,par,1.5),
+  answer(par,ny,10.0)
+}
+Info: 4 tuples computed.
+DES-Datalog> 
+DES-Datalog> % El sistema tendría que construir la vista asumida como la unión de la nueva 
+DES-Datalog> % definición y la antigua para procesar la consulta hipotética (y después 
+DES-Datalog> % recuperar la vista original)
+DES-Datalog> 
+DES-Datalog> /nolog

@@ -1,0 +1,150 @@
+% Question 22 - arbre syntaxique de la phrase 1
+% ( (the DET) (man N) NP ) ( (sings V) ((a DET)(song N) NP) VP)
+
+% Question 23 - pourrait être dans un fichier phrase1.dl
+the(0,1).
+man(1,2).
+sings(2,3).
+a(3,4).
+song(4,5).
+
+% Question 24 - pourrait être codé dans dictionnaire1.dl
+% déterminants
+det(I,J) :- a(I,J).
+det(I,J) :- the(I,J).
+% noms
+n(I,J) :- man(I,J).
+n(I,J) :- song(I,J).
+% verbes
+v(I,J) :- sings(I,J).
+
+% Question 25 - règles de grammaire (pourrait être mis dans un fichier grammaire1.dl)
+% sous-phrase nominale NP
+np(X,Z) :- det(X,Y), n(Y,Z).
+% sous-phrase verbale VP
+vp(X,Z) :- v(X,Y) , np(Y,Z).
+% règle pour construire une phrase S : S->NP VP
+s(X,Z)  :- np(X,Y), vp(Y,Z).
+% sous-phrase prépositionnelle PP
+pp(X,Z) :- prep(X,Y), np(Y,Z).
+
+% Question 26
+% On vérifie si on forme bien des phrases respectant la grammaire avec s.
+% s(0,5) renvoie bien un tuple, la phrase 1 respecte donc la grammaire.
+% Au contraire, s(0,4) ne renvoie pas de tuple car il ne la respecte pas.
+% DES> s(0,5)
+% {                                           
+%   s(0,5)
+% }
+% Info: 1 tuple computed.          
+% DES> s(0,4)
+% {                                           
+% }
+% Info: 0 tuples computed.          
+
+% Question 27
+% L'homme voit une licorne avec un téléscope.
+% Le problème est de distinguer si le téléscope est utilisé par l'homme pour
+% voir la licorne ou si l'homme une licorne qui porte un téléscope. On peut
+% traduire par "Avec un téléscope, l'homme voit une licorne." pour parler du
+% sens le plus plausible.
+
+
+% Question 28 : pourrait être dans un fichier phrase2.dl
+the(0,1).
+man(1,2).
+sees(2,10).
+a(10,11).
+unicorn(11,12).
+with(12,13).
+a(13,14).
+telescope(14,15).
+
+% Questions 29 et 31 - règles de grammaire (pourrait être mis dans un fichier
+% grammaire2.dl avec les 4 règles précédentes)
+% nouvelle règle sur les sous-phrases nominales NP
+np(X,Z) :- np(X,Y), pp(Y,Z).
+% nouvelle règle sur les sous-phrases verbales VP
+vp(W,Z) :- vp(W,X), pp(X,Z).
+
+% Question 30 - pourrait être codé dans dictionnaire2.dl
+% déterminants
+det(I,J) :- a(I,J).
+det(I,J) :- the(I,J).
+% noms
+n(I,J) :- man(I,J).
+n(I,J) :- unicorn(I,J).
+n(I,J) :- telescope(I,J).
+n(I,J) :- song(I,J).
+% verbes
+v(I,J) :- sees(I,J).
+v(I,J) :- sings(I,J).
+% prep
+prep(I,J) :- with(I,J).
+
+% Question 32
+% Cette requête permet de trouver deux analyses différentes pour la phrase 2.
+% Elles correspondent au fait de trouver les sous-phrases nominales qui se 
+% terminent par "15" dans les deux arbres de l'énoncé.
+% DES> np(X,15)
+% {                                           
+%   np(10,15),
+%   np(13,15)
+% }
+% Info: 2 tuples computed.   
+
+% Question 33
+% Il faudrait rajouté une catégorie de mots adjectif (adj) et ajouter
+% la règle NP->Det Adj N à NP.
+
+% Phrase avec adjectifs
+the(20,21).
+tall(21,22).
+man(22,24).
+sees(24,25).
+a(25,26).
+white(26,27).
+unicorn(27,28).
+with(28,29).
+a(29,30).
+long(30,31).
+telescope(31,32).
+
+% Phrase avec adjectifs et and
+the(40,41).
+tall(41,42).
+and(42,43).
+lucky(43,44).
+man(44,24).
+
+% Adjectif
+adj(I,J) :- tall(I,J).
+adj(I,J) :- lucky(I,J).
+adj(I,J) :- long(I,J).
+adj(I,J) :- white(I,J).
+
+% Règles prenant en compte les adjectifs pour les sous-phrases nominales NP
+np(X,Z) :- det(X,A), adj(A,B), n(B,Z).
+np(X,Z) :- det(X,A), adj(A,B), and(B,C), adj(C,D), n(D,Z).
+
+% Tests que les règles fonctionnent
+% La première phrase fonctionne : 
+% DES> s(20,X)
+% {                                           
+%   s(20,28),
+%   s(20,32)
+% }
+% Info: 2 tuples computed.
+% Le and fonctionne :
+% DES> np(40,Y)
+% {                                           
+%   np(40,24)
+% }
+% Info: 1 tuple computed.          
+% La deuxième phrase fonctionne :
+% DES> s(40,X)
+% {                                           
+%   s(40,28),
+%   s(40,32)
+% }
+% Info: 2 tuples computed.          

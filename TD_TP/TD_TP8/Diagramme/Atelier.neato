@@ -1,0 +1,22 @@
+digraph g {
+node [ fontsize = "10", shape = record ];
+edge [];
+
+"commandes" [shape = record, label = "{<col0> \N| id_commande:  integer\lquantite:  integer\lclient:  character varying(30)\ldate_livraison:  date\lid_machine:  integer\l}" ];
+
+"composition_machines" [shape = record, label = "{<col0> \N| id_machine:  integer\lid_piece:  integer\lqte_piece:  integer\l}" ];
+
+"machines" [shape = record, label = "{<col0> \N| id_machine:  integer\lnom_machine:  character varying(30)\lprix:  numeric(10,2)\ldescription:  text\l}" ];
+
+"p_fournisseurs" [shape = record, label = "{<col0> \N| id_fournisseur:  integer\lfournisseur:  character varying(30)\ladresse:  character varying(50)\lville:  character varying(20)\ltelephone:  numeric(10,0)\lfax:  numeric(10,0)\l}" ];
+
+"pieces" [shape = record, label = "{<col0> \N| id_piece:  integer\lnom_piece:  character varying(30)\len_stock:  integer\lid_fournisseur:  integer\l}" ];
+
+
+"commandes" -> "machines" [label="commandes_id_machine_fkey"];
+"composition_machines" -> "machines" [label="composition_machines_id_machine_fkey"];
+"composition_machines" -> "pieces" [label="composition_machines_id_piece_fkey"];
+"pieces" -> "p_fournisseurs" [label="pieces_id_fournisseur_fkey"];
+}
+
+

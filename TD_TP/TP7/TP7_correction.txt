@@ -1,0 +1,41 @@
+AIDE PROLOG :
+-------------
+
+Lancer swi-prolog en ligne de commande :
+swipl
+
+Charger la base de donnée :
+['dbd.pl'].
+
+Charger les faits d'un exercice dont le numéro est % :
+['exercice%.pl'].
+
+Quitter swi-prolog :
+halt.
+
+Afficher de nouvelles réponses : taper sur ;
+Arêter d'afficher des réponses : taper sur ENTREE
+
+
+TP 7 :
+------
+
+Les réponses aux 14 questions du tutoriel de ch5.pdf se trouvent
+dans les fichier exercice%.pl où % représente les nombres de 01 à
+14.
+Le fichier exercice08bis.pl permet de répondre aux questions de la
+fiche de TP.
+L'exercice 12 se décompose en deux parties A et B d'où les fichiers 
+exercice12A.pl et exercice12B.pl. De même pour les trois fichiers
+formant l'exercice 13.
+
+Question 1 :
+Rien ne permet dans la documentation de répondre à cette question.
+
+Question 2 :
+DBD propose plus d'une décomposition en 3NF, elles se distinguent par
+des permutations sur les relations. Elles sont donc toutes équivalentes
+(i.e. pas de meilleures).
+
+Questions 3 et 4 :
+Voir fichiers exercice8.pl et exercice8bis.pl.

@@ -1,0 +1,18 @@
+enigme.
+contenu(princesse).
+contenu(tigre).
+
+% Question 3.6
+affiche1(tigre,Y)     :- contenu(Y).
+affiche1(X,princesse) :- contenu(X).
+affiche2(princesse,Y) :- contenu(Y).
+
+% Question 3.7 - les deux affiches disent la vérité
+solutions(X,Y) :- affiche1(X,Y), affiche2(X,Y).
+
+% Question 3.8 - les deux affiches mentent
+alt_solutions(X,Y) :- contenu(X), contenu(Y), not(affiche1(X,Y)), not(affiche2(X,Y)).
+
+% Bonne solution
+bonneSolution(X,Y) :- solutions(X,Y).
+bonneSolution(X,Y) :- alt_solutions(X,Y).

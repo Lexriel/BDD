@@ -1,0 +1,171 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc} %%pour taper directement les lettres accentuées
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{anysize} %%pour pouvoir mettre les marges qu'on veut
+\marginsize{2.5cm}{2.5cm}{1.5cm}{1.5cm}
+
+% \usepackage{indentfirst} %%pour que les premier paragraphes soient aussi indentés
+\usepackage{amsfonts,amssymb,amsmath,amsthm}
+\usepackage{hyperref}
+% \hypersetup{pdfstartview=XYZ}
+\usepackage{enumerate}
+\usepackage{array}
+\usepackage{verbatim}
+\usepackage{eurosym}
+\usepackage{amssymb}
+\newcommand{\et}{\mbox{ and }}
+\newcommand{\ou}{\mbox{ or }}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{IE2 de BDD - correction}}
+\end{center}
+
+\noindent\hrulefill
+\vspace{0.5cm}
+
+% \vspace{2.5cm}
+\noindent
+\Large{\textbf{Exercice 1 - TRC}}
+
+\normalsize
+\vspace{0.2cm}
+\noindent
+\textbf{Question 1.1 (1pt)}
+
+\noindent
+La deuxième ligne nous indique que nous recherchons des identifiants
+de vols $t[vid]$ qui peuvent être volés ($v[distance]\leq a[portee]$)
+avec des avions affectés à des pilotes $p$ (jointure sur les $aid$).
+
+\noindent
+Les troisième et quatrième lignes nous indiquent que ces vols ont une
+autre propriété. Si on considère un vol $v$, tout avion qui pourrait
+le voler avec d'autres pilotes $p_2$ implique que $p_2=p$ (avec
+$c2[eid]=c[eid]$). En d'autres termes, il n'y a pas d'autres pilotes
+que $p$ qui peuvent le voler.
+
+\noindent
+On conclue alors que cette requête renvoie les identifiants de vols
+qui ne peuvent être volés que par un seul pilote.
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 1.2 (1pt)}
+
+\noindent
+On va modifier la requête TRC pour faire apparaître une forme que l'on
+peut écrire en SQL.
+
+% \noindent
+% $
+% \{t | \exists v \in vols, \exists a \in avions, \exists c \in certifications:\\
+% t[vid]=v[vid] \et a[aid]=c[aid] \et v[distance]\leq a[portee] \et \\
+% \forall c2 \in certifications,\forall a2 \in avions : (c2[aid]=a2[aid] \et v[distance]\leq a2[portee]) \\
+% \Rightarrow c2[eid] = c[eid] \}
+% $
+
+\vspace{0.1cm}
+\noindent
+On supprime l'implication à l'aide de la formule de De Morgan :
+
+\noindent
+$
+\{t | \exists v \in vols, \exists a \in avions, \exists c \in certifications:\\
+t[vid]=v[vid] \et a[aid]=c[aid] \et v[distance]\leq a[portee] \et \\
+\forall c2 \in certifications,\forall a2 \in avions : not(c2[aid]=a2[aid] \et v[distance]\leq a2[portee]) \ou \\
+c2[eid] = c[eid] \}
+$
+
+\vspace{0.1cm}
+\noindent
+On supprime les "pour tout" :
+
+\noindent
+$
+\{t | \exists v \in vols, \exists a \in avions, \exists c \in certifications:\\
+t[vid]=v[vid] \et a[aid]=c[aid] \et v[distance]\leq a[portee] \et \\
+\nexists c2 \in certifications,\nexists a2 \in avions : not(not(c2[aid]=a2[aid] \et v[distance]\leq a2[portee]) \ou \\
+c2[eid] = c[eid]) \}
+$
+
+\vspace{0.1cm}
+\noindent
+On supprime les doubles négations :
+
+\noindent
+$
+\{t | \exists v \in vols, \exists a \in avions, \exists c \in certifications:\\
+t[vid]=v[vid] \et a[aid]=c[aid] \et v[distance]\leq a[portee] \et \\
+\nexists c2 \in certifications,\nexists a2 \in avions : c2[aid]=a2[aid] \et v[distance]\leq a2[portee]) \et \\
+c2[eid] \neq c[eid]) \}
+$
+
+\vspace{0.1cm}
+\noindent
+On peut maintenant écrire la requête en SQL ainsi :
+\begin{verbatim}
+SELECT vid FROM vols v, avions a NATURAL JOIN certifications c WHERE
+v.distance<=a.portee and not EXISTS(
+  SELECT * FROM avions a2 NATURAL JOIN certifications c2 WHERE
+  a2.portee>=v.distance and c2.eid<>c.eid
+);
+\end{verbatim}
+
+\vspace{0.3cm}
+\noindent
+\Large{\textbf{Exercice 2 - Normalisation}}
+
+\normalsize
+\vspace{0.2cm}
+\noindent
+Dans tout cet exercice, les attributs formant la clé d'une relation
+sont soulignés.
+
+\vspace{0.2cm}
+\noindent
+\textbf{Question 2.1 (1pt)}
+
+\noindent
+On considère $R(\underline{MedecinID}, \underline{PatientID}, \underline{Date}, Diagnose, CodeTraitement, Tarif)$.
+
+\noindent
+On définit les dépendances fonctionnelles par
+
+\noindent
+$F = \{\ [MedecinID, PatientID,Date] \rightarrow [CodeTraitement, Diagnose],
+[CodeTraitement] \rightarrow [Tarif]\ \}$.
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 2.2 (1pt)}
+
+\noindent
+La relation $R$ est en 2NF car il n'y a pas de dépendances partielles.
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 2.3 (1pt)}
+
+\noindent
+La relation $R$ n'est pas en 3NF car l'attribut non-primaire $Tarif$ est dépendant transitivement de la clé :
+
+\noindent
+$[MedecinID, PatientID, Date] \rightarrow [CodeTraitement] \rightarrow [Tarif]$.
+
+\noindent
+On décompose $R$ en $(R_1,R_2)$ qui est 3NF avec
+
+\noindent
+$R_{1} =
+(\underline{MedecinID}, \underline{PatientID}, \underline{Date}, Diagnose, CodeTraitement)$ et
+
+\noindent
+$R_{2} =
+(\underline{CodeTraitement}, Tarif)$.
+
+\end{document}

@@ -1,0 +1,232 @@
+Exercice 1:
+-----------
+
+Question 1:
+PROJECT[fnom](fournisseurs);
+
+Question 2:
+SELECT[fad='Paris'](fournisseurs);
+
+Question 3:
+PROJECT[fnom](SELECT[fad='Paris'](fournisseurs));
+
+Question 4:
+PROJECT[anom](SELECT[acoul='vert'](articles));
+
+Question 5:
+PROJECT[aid](SELECT[prix<20](catalogue));
+
+Question 6:
+PROJECT[fid](SELECT[prix<20](catalogue));
+
+Question 7:
+PROJECT[fid](SELECT[prix<20 AND prix>10](catalogue));
+
+Question 8:
+PROJECT[fid](SELECT[prix>10](catalogue))
+INTERSECT
+PROJECT[fid](SELECT[prix<20](catalogue));
+
+Question 9: 
+- expression booléenne OR:
+  PROJECT[anom](SELECT[acoul='vert' OR acoul='rouge'](articles));
+  Le OR n'est pas implémenté dans RA :-(
+
+- UNION de sélections:
+  PROJECT[anom](SELECT[acoul='vert'](articles)
+                UNION
+                SELECT[acoul='rouge'](articles));
+
+- UNION de projections:
+  PROJECT[anom](SELECT[acoul='vert'](articles))
+  UNION
+  PROJECT[anom](SELECT[acoul='rouge'](articles));
+
+Question 10:
+- expression booléenne ET
+  PROJECT[anom](SELECT[acoul='vert' AND acoul='rouge'](articles));
+
+- intersection de sélections
+  PROJECT[anom](SELECT[acoul='vert'](articles)
+  INTERSECT
+  SELECT[acoul='rouge'](articles));
+
+- intersection de projections
+  PROJECT[anom](SELECT[acoul='vert'](articles))
+  INTERSECT
+  PROJECT[anom](SELECT[acoul='rouge'](articles));
+
+
+Exercice 2:
+-----------
+
+Question 1:
+Cette commande renvoie le nom des fournisseurs proposant des articles rouges à moins de 100€ dans le catalogue.
+
+PROJECT[fnom]((SELECT[acoul='rouge'](articles))
+              JOIN
+              (SELECT[prix<100](catalogue))
+              JOIN
+              fournisseurs);
+
+Question 2:
+Cette commande renvoie le nom des fournisseurs proposant des articles rouges ou verts à moins de 100€ dans le catalogue.
+
+PROJECT[fnom]((SELECT[acoul='rouge'](articles))
+              JOIN
+              (SELECT[prix<100](catalogue))
+              JOIN
+              fournisseurs)
+UNION
+PROJECT[fnom]((SELECT[acoul='rouge'](articles))
+              JOIN
+              (SELECT[prix<100](catalogue))
+              JOIN
+              fournisseurs);
+
+Exercice 3:
+-----------
+
+Question 1:
+PROJECT[anom](articles JOIN catalogue);
+
+Question 2:
+PROJECT[anom,prix,fnom](articles JOIN catalogue JOIN fournisseurs);
+
+Question 3:
+PROJECT[fid](SELECT[acoul='rouge'](articles) JOIN catalogue);
+
+Question 4:
+PROJECT[fnom](SELECT[prix<20](catalogue) JOIN fournisseurs);
+
+Question 5:
+PROJECT[fid](catalogue)
+MINUS
+PROJECT[fid](SELECT[prix<10000](catalogue));
+
+Question 6:
+PROJECT[fnom,fad](catalogue JOIN fournisseurs)
+MINUS
+PROJECT[fnom,fad](SELECT[prix<10000](catalogue) JOIN fournisseurs);
+
+Question 7:
+PROJECT[aid](SELECT[acoul='vert'](articles))
+TIMES
+PROJECT[aid](SELECT[acoul='rouge'](articles));
+(il y en a 2*4 = 8)
+
+Question 8:
+PROJECT[aid](articles) MINUS PROJECT[aid](catalogue);
+
+Question 9:
+PROJECT[anom](articles) MINUS PROJECT[anom](catalogue JOIN articles);
+
+Question 10:
+PROJECT[fid](SELECT[acoul='rouge'](articles) JOIN catalogue)
+INTERSECT
+PROJECT[fid](SELECT[acoul='vert'](articles) JOIN catalogue);
+
+Question 11:
+PROJECT[fnom](SELECT[acoul='noir'](articles) JOIN catalogue JOIN fournisseurs);
+
+Question 12:
+PROJECT[aid,fid](SELECT[aid=aid2 AND fid<>fid2](catalogue TIMES RENAME[fid2,aid2,prix](catalogue)));
+
+Question 13:
+PROJECT[fid,fnom](fournisseurs)
+MINUS
+(PROJECT[fid,fnom](SELECT[acoul='noir'](articles) JOIN catalogue JOIN fournisseurs)
+UNION
+PROJECT[fid,fnom](SELECT[acoul='argente'](articles) JOIN catalogue JOIN fournisseurs));
+
+
+Exercice 1 feuille TD1 bis:
+---------------------------
+
+Question 1:
+PROJECT[prix](catalogue)
+MINUS
+PROJECT[prix](SELECT[prix<prix2](catalogue
+                                 TIMES
+                                 RENAME[fid,aid,prix2](catalogue))
+             );
+
+
+Question 2:
+PROJECT[anom](catalogue JOIN articles)
+MINUS
+PROJECT[anom](SELECT[prix<prix2](catalogue
+                                 TIMES
+                                 RENAME[fid2,aid2,prix2](catalogue))
+              JOIN
+              articles
+             );
+PROJECT[prix](catalogue)
+MINUS
+PROJECT[prix](SELECT[prix>prix2](catalogue
+                                 TIMES
+                                 RENAME[fid,aid,prix2](catalogue))
+             );
+
+Question 3:
+PROJECT[fnom](
+  (PROJECT[fid,aid,prix](catalogue)
+   MINUS
+   PROJECT[fid,aid,prix](SELECT[prix>prix2](catalogue
+                                            TIMES
+                                            RENAME[fid2,aid2,prix2](catalogue)
+                                           )
+                        )
+  )
+  JOIN
+  fournisseurs
+);
+
+Question 4:
+PROJECT[aid](catalogue) MINUS PROJECT[aid](articles);
+
+Question 5:
+PROJECT[fnom]((PROJECT[fid](fournisseurs)
+               MINUS PROJECT[fid](catalogue)
+              )
+              JOIN
+              fournisseurs
+             );
+
+Question 6:
+PROJECT[aid,anom](
+  PROJECT[anom,aid,prix](
+    SELECT[fnom='kiventout'](fournisseurs)
+    JOIN
+    catalogue
+    JOIN
+    articles
+  )
+  MINUS
+  PROJECT[anom,aid,prix](
+    SELECT[prix<prix2](
+      PROJECT[anom,aid,prix](
+        SELECT[fnom='kiventout'](fournisseurs)
+        JOIN
+        catalogue
+        JOIN
+        articles
+      )
+      TIMES
+      RENAME[anom2,aid2,prix2](
+        PROJECT[anom,aid,prix](
+          SELECT[fnom='kiventout'](fournisseurs)
+          JOIN
+          catalogue
+          JOIN
+          articles
+        )
+      )
+    )
+  )
+);
+
+Question 7:
+PROJECT[aid](catalogue)
+MINUS
+PROJECT[aid](SELECT[prix<20](catalogue JOIN articles));

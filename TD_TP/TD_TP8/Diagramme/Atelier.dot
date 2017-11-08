@@ -1,0 +1,30 @@
+digraph g {
+graph [
+rankdir = "LR",
+concentrate = true,
+ratio = auto
+];
+node [
+fontsize = "10",
+shape = record
+];
+edge [
+];
+
+"commandes" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id_commande </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > quantite </TD><TD align="left" > integer </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > client </TD><TD align="left" > character varying(30) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> <TR><TD PORT="ltcol4" ></TD><TD align="left" > date_livraison </TD><TD align="left" > date </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol4"> </TD></TR> <TR><TD PORT="ltcol5" ></TD><TD align="left" > id_machine </TD><TD align="left" > integer </TD><TD align="left" >  </TD><TD align="left" > FK </TD><TD align="left" PORT="rtcol5"> </TD></TR> </TABLE>> ];
+
+"composition_machines" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id_machine </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" > FK </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > id_piece </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" > FK </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > qte_piece </TD><TD align="left" > integer </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> </TABLE>> ];
+
+"machines" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id_machine </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > nom_machine </TD><TD align="left" > character varying(30) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > prix </TD><TD align="left" > numeric(10,2) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> <TR><TD PORT="ltcol4" ></TD><TD align="left" > description </TD><TD align="left" > text </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol4"> </TD></TR> </TABLE>> ];
+
+"p_fournisseurs" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id_fournisseur </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > fournisseur </TD><TD align="left" > character varying(30) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > adresse </TD><TD align="left" > character varying(50) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> <TR><TD PORT="ltcol4" ></TD><TD align="left" > ville </TD><TD align="left" > character varying(20) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol4"> </TD></TR> <TR><TD PORT="ltcol5" ></TD><TD align="left" > telephone </TD><TD align="left" > numeric(10,0) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol5"> </TD></TR> <TR><TD PORT="ltcol6" ></TD><TD align="left" > fax </TD><TD align="left" > numeric(10,0) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol6"> </TD></TR> </TABLE>> ];
+
+"pieces" [shape = plaintext, label = < <TABLE BORDER="1" CELLBORDER="0" CELLSPACING="0"> <TR ><TD PORT="ltcol0"> </TD> <TD bgcolor="grey90" border="1" COLSPAN="4"> \N </TD> <TD PORT="rtcol0"></TD></TR>  <TR><TD PORT="ltcol1" ></TD><TD align="left" > id_piece </TD><TD align="left" > integer </TD><TD align="left" > PK </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol1"> </TD></TR> <TR><TD PORT="ltcol2" ></TD><TD align="left" > nom_piece </TD><TD align="left" > character varying(30) </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol2"> </TD></TR> <TR><TD PORT="ltcol3" ></TD><TD align="left" > en_stock </TD><TD align="left" > integer </TD><TD align="left" >  </TD><TD align="left" >  </TD><TD align="left" PORT="rtcol3"> </TD></TR> <TR><TD PORT="ltcol4" ></TD><TD align="left" > id_fournisseur </TD><TD align="left" > integer </TD><TD align="left" >  </TD><TD align="left" > FK </TD><TD align="left" PORT="rtcol4"> </TD></TR> </TABLE>> ];
+
+
+
+"commandes":rtcol5 -> "machines":ltcol1 [label="commandes_id_machine_fkey"];
+"composition_machines":rtcol1 -> "machines":ltcol1 [label="composition_machines_id_machine_fkey"];
+"composition_machines":rtcol2 -> "pieces":ltcol1 [label="composition_machines_id_piece_fkey"];
+"pieces":rtcol4 -> "p_fournisseurs":ltcol1 [label="pieces_id_fournisseur_fkey"];
+}

@@ -1,0 +1,143 @@
+Question 1
+----------
+
+ couleursrares 
+---------------
+ noir
+ argente
+ opaque
+ cyan
+ magenta
+ superjaune
+(6 rows)
+
+
+Question 2
+----------
+
+ aid |           anom            
+-----+---------------------------
+   1 | Left Handed Toaster Cover
+   3 | Acme Widget Washer
+   8 | Fire Hydrant Cap
+(3 rows)
+
+
+Question 3
+----------
+
+         fnom         
+----------------------
+ Big Red Tool and Die
+ Autolux
+ Perfunctory Parts
+(3 rows)
+
+
+Question 4
+----------
+
+ aid 
+-----
+   8
+   4
+   1
+   5
+   9
+   7
+(6 rows)
+
+
+Question 5
+----------
+
+ celuiquivendtout 
+------------------
+ kiventout
+(1 row)
+
+ celuiquivendtout 
+------------------
+(0 rows)
+
+
+Question 6
+----------
+
+  fnom   
+---------
+ Autolux
+(1 row)
+
+
+Question 7
+----------
+
+              anom              |  min  |  max   
+--------------------------------+-------+--------
+ 7 Segment Display              |  1.00 |  75.20
+ Acme Widget Washer             | 15.30 |  57.30
+ Anti-Gravity Turbine Generator |  0.55 | 124.23
+ Brake for Crop Circles Sticker | 20.50 |  22.20
+ Fire Hydrant Cap               |  7.95 |  48.60
+ Left Handed Toaster Cover      | 16.50 |  36.10
+(6 rows)
+
+
+Question 8
+----------
+
+   fnom    |              anom              
+-----------+--------------------------------
+ kiventout | Acme Widget Washer
+ kiventout | Anti-Gravity Turbine Generator
+(2 rows)
+
+
+Question 9
+----------
+
+ fid | nbarticles 
+-----+------------
+   1 |          9
+(1 row)
+
+
+Question 10
+-----------
+
+          anom           
+-------------------------
+ Ferrari F430
+ Microsd Card USB Reader
+ Smoke Shifter End
+(3 rows)
+
+
+Question 11
+-----------
+
+ fid |   fnom    
+-----+-----------
+   6 | HappyCake
+(1 row)
+
+
+Question 12
+-----------
+
+ aid 
+-----
+  11
+   6
+(2 rows)
+
+
+Question 13
+-----------
+
+ aid 
+-----
+  13
+(1 row)
+

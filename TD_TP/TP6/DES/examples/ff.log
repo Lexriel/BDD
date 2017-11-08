@@ -1,0 +1,113 @@
+*********************************************************
+*                                                       *
+*        DES: Datalog Educational System v.3.0          *
+*                                                       *
+*                                                       *
+* Type "/help" for help about commands                  *
+* Type "des." to continue if you get out of DES         *
+*   from a Prolog interpreter                           *
+*                                                       *
+*                    Fernando Sáenz-Pérez (c) 2004-2011 *
+*                                         GPD DISIA UCM *
+*             Please send comments, questions, etc. to: *
+*                                     fernan@sip.ucm.es *
+*                                             Web site: *
+*                           http://des.sourceforge.net/ *
+*********************************************************
+
+DES-Datalog> create table t(a int)                
+
+
+DES-Datalog> insert into t values(1)              
+
+Info: 1 tuple inserted.
+
+DES-Datalog> with t(a) as select 2 select * from t
+
+answer(t.a:number(integer)) ->
+{                                                             
+  answer(1),
+  answer(2)
+}
+Info: 2 tuples computed.
+
+DES-Datalog> create view v(a) as select * from t
+
+
+DES-Datalog> with v(a) as select 2 select * from v
+
+answer(v.a:number(integer)) ->
+{                                                             
+  answer(1),
+  answer(2)
+}
+Info: 2 tuples computed.
+
+DES-Datalog> 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*********************************************************
+*                                                       *
+*        DES: Datalog Educational System v.3.0          *
+*                                                       *
+*                                                       *
+* Type "/help" for help about commands                  *
+* Type "des." to continue if you get out of DES         *
+*   from a Prolog interpreter                           *
+*                                                       *
+*                    Fernando Sáenz-Pérez (c) 2004-2011 *
+*                                         GPD DISIA UCM *
+*             Please send comments, questions, etc. to: *
+*                                     fernan@sip.ucm.es *
+*                                             Web site: *
+*                           http://des.sourceforge.net/ *
+*********************************************************
+
+DES-Datalog> create table t(a int)                  
+
+
+DES-Datalog> insert into t values(1)                
+
+Info: 1 tuple inserted.
+
+DES-Datalog> assume select 2 in t(a) select * from t
+
+answer(t.a:number(integer)) ->
+{                                                             
+  answer(1),
+  answer(2)
+}
+Info: 2 tuples computed.
+
+DES-Datalog> create view v(a) as select * from t    
+
+
+DES-Datalog> assume select 2 in v(a) select * from v
+
+answer(v.a:number(integer)) ->
+{                                                             
+  answer(1),
+  answer(2)
+}
+Info: 2 tuples computed.
+
+DES-Datalog> 

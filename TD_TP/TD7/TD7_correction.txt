@@ -1,0 +1,343 @@
+Rappels
+-------
+
+Dépendance fonctionnelle :
+Il y a une dépendance fonctionnelle X->Y (où X et Y sont des sous-ensembles
+d'attributs de R) si pour tous t1,t2 dans R, on a :
+t1[X]=t2[X] => t1[Y]=t2[Y].
+En gros X permet de déduire Y.
+
+Exemple :
+Par exemple, on considère la table Salle_de_sport_coréenne où il y a deux
+familles de même nom, et un Bruce dans ces deux familles :
+
+                              Salle_de_sport_coréenne
+     ---------------------------------------------------------------------------
+    | Id_perso | Id_famille | Prénom | Nom | Cours_suivi   | Abonnement_famille |
+    |----------|------------|--------|-----|---------------|--------------------|
+    |    A     |      B     |   C    |  D  |      E        |          F         |
+    |----------|------------|--------|-----|---------------|--------------------|
+    | 27       | 120        | Zu     | Li  | {Judo,Karaté} | 100                |
+    | 28       | 120        | Bruce  | Li  | Karaté        | 100                |
+    | 41       | 125        | Bruce  | Li  | Ju-jitsu      | 50                 |
+     ---------------------------------------------------------------------------
+
+Clé : AE
+
+Dépendances fonctionnelles de cette relation :
+A->B
+B->F
+AE->CD
+
+Exemples de dépendances vraies pour cette table, mais risquant d'être fausses
+si on rajoute des tuples à la table :
+E->A, F->B
+
+Inférence des dépendances fonctionnelles :
+Si la relation devient grosse, on ne pourra pas inférer automatiquement si les
+dépendances fonctionnelles sont valides ou non, à moins que la signification et
+les relations entre les attributs soient connus.
+Un seul contre-exemple réfute une dépendance fonctionnelle, par exemple D->B
+est faux car Li=>120 et Li=>125, on ne garantit donc pas l'unicité.
+
+Formes normales :
+Le processus de normalisation (proposé par Codd en 1972) réalise une série
+de tests sur le schéma d'une relation pour certifier qu'il satisfait une
+certaine forme normale avec certains critères. Cela repose sur les
+dépendances fonctionnelles et sur les clés. L'objectif des formes normales
+est de minimiser la redondance, les anomalies de suppression/insertion/MAJ.
+
+Forme 1NF :
+Pas d'ensemble dans un attribut. Par exemple, si un schéma a un attribut
+lieux et qu'un tuple a pour lieux {Paris,Lille,Londres}, il faut créer 3
+tuples pour séparer les 3 lieux et on inclue lieux dans la clé primaire.
+Par exemple, la table Salle_de_sport_coréenne est 1NF avec la clé Id_perso.
+La salle de sport coréenne n'est pas 1NF, pour qu'elle le soit, il faut la
+modifier en :
+
+                              Salle_de_sport_coréenne
+     -------------------------------------------------------------------------
+    | Id_perso | Id_famille | Prénom | Nom | Cours_suivi | Abonnement_famille |
+    |----------|------------|--------|-----|-------------|--------------------|
+    |    A     |      B     |   C    |  D  |      E      |          F         |
+    |----------|------------|--------|-----|-------------|--------------------|
+    | 27       | 120        | Zu     | Li  | Judo        | 100                |
+    | 27       | 120        | Zu     | Li  | Karaté      | 100                |
+    | 28       | 120        | Bruce  | Li  | Karaté      | 100                |
+    | 41       | 125        | Bruce  | Li  | Ju-jitsu    | 50                 |
+     -------------------------------------------------------------------------
+
+Clé : AE
+
+Dépendances fonctionnelles de cette relation :
+A->B
+B->F
+AE->CD
+
+Forme 2NF :
+On dit que X->Y est une dépendance fonctionnelle complète si la suppression
+d'un attribut A dans X annule cette dépendance fonctionnelle.
+Un schéma relationnel R est en 2NF si chaque attribut non-primaire de R est
+complètement dépendant de la clé primaire de R.
+Il faut décomposer la relation 1NF en plusieurs relations 2NF de sorte que
+les attributs non-primaires ne soient associés qu'à la clé primaire dont ils
+sont fonctionnellement complètement dépendants.
+Par exemple, il faut découper découper la table Salle_de_sport_coréenne pour
+la mettre en 2NF. Chaque attribut non-primaire est bien entièrement dépendant
+de chacune des clés de sa relation :
+
+              Identifiants_famille
+     --------------------------------------------
+    | Id_perso | Id_famille | Abonnement_famille |
+    |----------|------------|--------------------|
+    |    A     |      B     |          F         |
+    |----------|------------|--------------------|  Dépendance fonctionnelle :
+    | 27       | 120        | 100                |  A->B, B->F
+    | 28       | 120        | 100                |  Clé : A
+    | 41       | 125        | 50                 |
+     --------------------------------------------
+
+
+          Usagers_salle_de_sport_coréenne
+     ---------------------------------------
+    | Id_perso | Prénom | Nom | Cours_suivi |
+    |----------|--------|-----|-------------|
+    |    A     |   C    |  D  |      E      |  Dépendance fonctionnelle : AE->CD
+    |----------|--------|-----|-------------|  Clé : AE
+    | 27       | Zu     | Li  | Judo        |
+    | 27       | Zu     | Li  | Karaté      |
+    | 28       | Bruce  | Li  | Karaté      |
+    | 41       | Bruce  | Li  | Ju-jitsu    |
+     ---------------------------------------
+
+Forme 3NF et forme normale de Boyce-Codd :
+Un schéma relationnel est en 3NF s'il satisfait 2NF et qu'aucun attribut
+non-primaire n'est pas transitivement dépendant de la clé primaire.
+Pour notre exemple, A->F est une dépendance résultant de A->B et B->F.
+A->F étant transitive, on modifie nos tables de la façon suivante pour
+qu'elle soit 3NF (à noter qu'elle est également BCNF).
+On a aussi la propriété suivante : un schéma relationnel R est en 3NF si,
+lorsqu'on a une dépendance fonctionnelle X->A, alors :
+* soit X est une superclé de R,
+* soit A est un attribut primaire de R.
+Pour être en BCNF (Forme Normale de Boyce-Codd), on exclut la deuxième
+condition. Ainsi, Être en BCNF implique être en 3NF.
+
+           Identifiants
+     -----------------------
+    | Id_perso | Id_famille |
+    |----------|------------|
+    |    A     |      B     |
+    |----------|------------|  Dépendance fonctionnelle : A->B
+    | 27       | 120        |  Clé : A
+    | 28       | 120        |
+    | 41       | 125        |
+     -----------------------
+
+                Familles
+     ---------------------------------
+    | Id_famille | Abonnement_famille |
+    |------------|--------------------|
+    |      B     |          F         |
+    |------------|--------------------|  Dépendance fonctionnelle : B->F
+    | 120        | 100                |  Clé : B
+    | 125        | 50                 |
+     ---------------------------------
+
+          Usagers_salle_de_sport_coréenne
+     ---------------------------------------
+    | Id_perso | Prénom | Nom | Cours_suivi |
+    |----------|--------|-----|-------------|
+    |    A     |   C    |  D  |      E      |  Dépendance fonctionnelle : AE->CD
+    |----------|--------|-----|-------------|  Clé : AE
+    | 27       | Zu     | Li  | Judo        |
+    | 27       | Zu     | Li  | Karaté      |
+    | 28       | Bruce  | Li  | Karaté      |
+    | 41       | Bruce  | Li  | Ju-jitsu    |
+     ---------------------------------------
+
+
+Exercice 1
+----------
+
+Dans le schéma relationnel R(A,B,C,D,E), on considère les dépendances
+fonctionnelles suivantes :
+AB->C,
+CD->E,
+DE->B.
+
+Clôture d'un ensemble F de dépendances fonctionnelles :
+C'est l'ensemble F+ de toutes les dépendances fonctionnelles que l'on peut
+déduire de F.
+Par exemple, AB->C signifie qu'on peut identifier les éléments C grâce aux
+attributs A et B. On a alors AB+ = ABC.
+
+Superclés, clés et clés candidates :
+* Une superclé d'un schéma relationnel R(A,B,C,D,E) est un sous-ensemble
+  d'attributs S tel que pour tous tuples t1 et t2 de R, t1[S] != t2[S].
+* Une clé est une superclé minimale i.e. avec le moins d'attributs S
+  possibles tel que pour tous tuples t1 et t2 de R, t1[S] != t2[S].
+* S'il y a plusieurs clés dans un schéma relationel, on parle de clés
+  candidates. On peut en définir une principale et les autres secondaires.
+  Exemple : ABCDE est une superclé.
+
+On sait que les tuples d'une relation sont tous deux à deux distincts.
+On aimerait rechercher les superclés de R mais rien ne nous indique, en
+enlevant des attributs de R, que l'on aura l'unicité des tuples obtenus en
+enlevant ces attributs.
+Il faut donc dans cet exercice que les superclés recherchées permettent de
+déduire tous les attributs de R, i.e. trouver F tel que F+ = ABCDE.
+
+Réponse à l'exercice :
+* AB+ = ABC donc AB n'est pas une superclé donc n'est pas clé candidate.
+* ABD est une clé candidate car ABD+ = ABCDE.
+* ACD est une clé candidate car ACD+ = ABCDE.
+
+
+Exercice 2
+----------
+
+Dans le schéma relationnel R(A,B,C,D,E), on considère les dépendances
+fonctionnelles suivantes :
+A->BC,
+CD->E,
+B->D,
+E->A.
+
+Il faut partir de chaque attribut et essayer de voir la clôture obtenue,
+puis quels attributs on doit rajouter pour identifier tous les attributs
+du schéma relationnel afin de garantir l'unicité de chaque tuple.
+
+Les clés candidates de ce schéma relationnel sont :
+* A  : A->BC => ABC ; B->D  => ABCD ; CD->E => ABCDE ; donc  A+ = ABCDE.
+* BC : B->D  => BCD ; CD->E => BCDE ; E->A  => ABCDE ; donc BC+ = ABCDE.
+* CD : CD->E => CDE ; E->A  => ACDE ; A->BC => ABCDE ; donc CD+ = ABCDE.
+* E  : E->A  => AE  ; A->BC => ABCE ; B->D  => ABCDE ; donc  E+ = ABCDE.
+
+Remarque : pour être au clair sur nos manipulations, on a utilisé les
+règles d'inférence du cours 10.
+
+
+Exercice 3
+----------
+
+Règles d'inférence d'Armstrong :
+* IR1 - Réflexivité   : Si Y est inclus dans X, alors X->Y.
+* IR2 - Extensibilité : Si X->Y, alors XZ->YZ. (XZ = X union Z)
+* IR3 - Transitivité  : Si X->Y et Y->Z, alors X->Z.
+
+Question 1 :
+Avec IR2, si A->B, alors pour Z=A on a AA->AB soit A->AB.
+Avec IR3, si A->AB et AB->C, alors A->C.
+
+Question 2 :
+Reprenons la table Salle_de_sport_coréenne et notons ti ses tuples.
+Posons A=Id_perso, B=Id_famille et C=Prénom (ou [Prénom,Nom]).
+On a bien A->B et AB->C.
+Or t2[B]=t3[B] n'implique pas t2[C]=t3[C], donc B->C n'est pas vrai
+dans cette table. Par conséquent, il est impossible dans déduire B->C
+à l'aide des dépendances de l'énoncé (si c'était le cas, on n'aurait
+pas pu trouver de contre-exemple).
+
+
+Exercice 4
+----------
+
+Question 1 :
+A+ = ADEIJ donc A n'est pas une superclé.
+B+ = BFGH  donc B n'est pas une superclé.
+AB+ = ABCDEFGHIJ = R donc AB est une superclé.
+Comme A et B ne sont pas des superclés, AB est une superclé minimale
+donc une clé.
+Comme A ni A ni B n'interviennent dans les membres droits des dépendances
+fonctionnelles, toute superclé doit être de la forme ABS avec S ensemble
+d'attributs. Si S est non-vide, ABS n'est pas une superclé minimale donc
+n'est pas une clé. Ainsi, AB est l'unique clé de R.
+
+Question 2 :
+* 2NF :
+  On cherche à identifier les dépendances partielles qui violent les
+  critères pour être 2NF. Les attributs sont ici fonctionnellement
+  dépendants de A et/ou B.
+  Les clôtures A+ et B+ donnent les dépendances fonctionnelles complètes
+  A->DEIJ et B->FGH. On a également AB->C. On crée donc les relations
+  suivantes pour mettre R en norme 2NF :
+  R1(A,D,E,I,J), R2(B,F,G,H) et R3(A,B,C) avec les clés A, B, AB
+  respectivement et avec les dépendances fonctionnelles R1{A->DE, D->IJ},
+  R2{B->F, F->GH}, R3{AB->C}.
+* 3NF :
+  On crée donc les relations suivantes pour mettre R en forme 3NF, à
+  partir des relations en 2NF :
+  R11(A,D,E), R12(D,I,J), R21(B,F), R22(F,G,H), R3(A,B,C) avec les clés
+  A, D, B, F, AB respectivement et avec les dépendances fonctionnelles
+  R11{A->DE}, R12{D->IJ}, R21{B->F}, R22{F->GH}, R3{AB->C}.
+
+
+Exercice 5
+----------
+
+Question 1 : en ne prenant en compte que la clé primaire Property_id#
+La relation LOTS est bien définie en 1NF, et aussi en 2NF car il n'y a
+pas de dépendances partielles par rapport à Property_id#. Mais elle n'est
+pas en 3NF car il y a deux dépendances transitives sur la clé primaire :
+* Property_id#->County_name, County_name->Tax_rate
+* Property_id#->Area, Area->Price
+
+Question 2 : en prenant en compte les deux clés
+La relation LOTS est bien définie en 1NF mais n'est pas 2NF. En effet,
+la dépendance partielle County_name->Taxe_rate sur la clé
+(County_name,Lot#) viole 2NF.
+En d'autres mots, comme la suppression d'un attribut primaire dans
+{County_name,Lot#}->Taxe_rate n'annule pas la dépendance fonctionnelle,
+LOTS n'est pas 2NF.
+
+
+Exercice 6
+----------
+
+Questions 1 et 2 :
+Le schéma résultant de la jointure naturelle entre les deux relations est
+R(C#, P#, Cdate, Client#, Somme_totale, Qte_cde, Prix_total, Remise%)
+avec la clé (C#, P#).
+
+Question 3 :
+Les dépendances fonctionnelles de R sont :
+{C#,P#}->{Qte_cde,Prix_total,Remise%}
+C#->{Cdate,Client#,Somme_totale}
+
+Question 4 :
+R n'est pas en 2NF car les attributs non-primaires Cdate, Client#, Somme_totale
+sont partiellement dépendant de la clé primaire {C#,P#}.
+
+
+Exercice 7
+----------
+
+On considère la relation suivante pour des livres qui sont publiés :
+LIVRE(Livre_titre, Nom_auteur, Livre_type, Prix_liste, Auteur_afil,
+      Editeur)
+avec la clé {Livre_titre, Nom_auteur}.
+On a les dépendances fonctionnelles suivantes :
+* Livre_titre->{Editeur, Livre_type}
+* Livre_type->Prix_liste
+* Nom_auteur->Auteur_afil
+
+Question 1 :
+Les attributs non-primaires sont dépendants partiellement de la clé
+{Livre_titre, Nom_auteur} comme ils dépendent complètement d'un seul
+attribut primaire. La relation LIVRE n'est donc pas en 2NF mais juste
+en 1NF.
+
+Question 2 :
+Pour passer LIVRE en 2NF, on élimine les dépendances partielles :
+* LIVRE0(Livre_titre, Nom_auteur) avec la clé {Livre_titre,Nom_auteur}
+* LIVRE1(Livre_tite, Editeur, Livre_type, Prix_liste)
+  avec la clé Livre_titre
+* LIVRE2(Nom_auteur, Auteur_afil) avec la clé Nom_auteur
+Pour passer LIVRE en 3NF, on élimine la dépendance transitive sur
+Prix_liste :
+* LIVRE0(Livre_titre, Nom_auteur) avec la clé Livre_titre
+* LIVRE11(Livre_titre, Editeur, Livre_type) avec la clé Livre_titre
+* LIVRE12(Livre_titre, Prix_liste) avec la clé Livre_titre
+* LIVRE2(Nom_auteur, Auteur_afil) avec la clé Nom_auteur
+

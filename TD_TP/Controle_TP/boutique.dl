@@ -1,0 +1,31 @@
+% Exercice 1 - Datalog --
+% -----------------------
+
+% Afficher la jointure naturelle "fournisseurs * catalogue * articles" sans les adresses
+fournisseurs(Fid,Fnom,_), catalogue(Fid,Aid,Prix), articles(Aid,Anom,Acoul).
+
+% Question 1 -- nom des fournisseurs proposant au moins deux articles de couleur rouge
+deuxrouges(X) :- fournisseurs(Fid,X,_), catalogue(Fid,Aid,_), articles(Aid,_,'rouge'), catalogue(Fid,Aid2,_), articles(Aid2,_,'rouge'), Aid2\=Aid.
+% {                                           
+%   deuxrouges('Big Red Tool and Die'),
+%   deuxrouges(kiventout)
+% }
+% Info: 2 tuples computed.          
+
+% Question 1 -- nom des fournisseurs proposant un même article en plus d'une couleur
+deuxcoul(X)   :- fournisseurs(Fid,X,_), catalogue(Fid,Aid,_), articles(Aid,Anom,Acoul), catalogue(Fid,Aid2,_), articles(Aid2,Anom2,Acoul2), Anom=Anom2, Acoul\=Acoul2.
+% {                                           
+%   deuxcoul(kiventout)
+% }
+% Info: 1 tuple computed.          
+
+% Question 1 -- nom des fournisseurs proposant au moins deux articles de prix>45€
+plutotcher(X) :- fournisseurs(Fid,X,_), catalogue(Fid,Aid,Prix), catalogue(Fid,Aid2,Prix2), Aid\=Aid2, Prix>45, Prix2>45.
+% {                                           
+%   plutotcher('Alien Aircaft Inc.'),
+%   plutotcher(kiventout)
+% }
+% Info: 2 tuples computed.          
+
+% Question (absente du sujet) -- nom des fournisseurs d'articles de prix<10€
+bonmarche(X)  :- fournisseurs(Fid,X,_), catalogue(Fid,_,Prix), Prix<10.

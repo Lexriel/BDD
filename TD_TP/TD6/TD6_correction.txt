@@ -1,0 +1,140 @@
+
+Rappel - table de vérité de l'implication :
+
+      ----------------------
+     |  P   |  Q   | P => Q |
+     |------|------|--------|
+     | VRAI | VRAI |  VRAI  |
+     | VRAI | FAUX |  FAUX  |
+     | FAUX | VRAI |  VRAI  |
+     | FAUX | FAUX |  VRAI  |
+      ----------------------
+
+
+Exercice 1
+----------
+
+Question 1 :
+  Affirmation : "Quand je suis en forme, je fais de bons TPs donc quand je fais de
+  mauvais TPs, je ne suis pas en forme".
+
+  On pose :
+  P = "je suis en forme"
+  Q = "je fais de bons TPs"
+
+  On traduit l'affirmation en formule logique :
+  (P => Q) => (not Q => not P)
+
+  Cette formule est vraie comme on a une contraposée.
+
+Question 2 :
+  Affirmation : "Si j'avais envoyé des textos sur le canapé, alors mon portable
+  serait resté sur le canapé. Je n'ai pas envoyé de textos sur le canapé. Donc
+  mon portable n'est pas resté sur le canapé."
+
+  On pose :
+  P = "j'ai envoyé des textos sur le canapé"
+  Q = "mon portable est resté sur le canapé"
+
+  On traduit l'affirmation en formule logique :
+  ( (P => Q) and not P ) => not Q
+
+  Cette formule est fausse comme elle n'est pas vraie pour P faux et Q vrai.
+
+  Remarque : une formule est vraie si, lorsque l'on construit sa table de vérité,
+  on aboutit à une totologie, i.e. des vrais partout. Si ce n'est pas le cas, elle
+  est fausse.
+
+Question 3 :
+  Affirmation : "Si je ne réussis pas bien ce TP, je ne validerai pas l'UE, et
+  si je ne valide pas l'UE, je vais déprimer, donc si je ne réussis pas bien ce
+  TP, je vais déprimer."
+
+  On pose :
+  P = "je ne réussis pas bien ce TP"
+  Q = "je ne valide pas l'UE"
+  R = "je vais déprimer"
+
+  On traduit l'affirmation en formule logique :
+  ( (P => Q) and (Q => R) ) => (P => R)
+
+  Cette formule est vrai (transitivité de l'implication).
+
+
+Exercice 2 :
+------------
+
+Question 1 :
+  Affirmation : "Tous les étudiants qui ont des bonnes notes venaient en cours."
+
+  On pose :
+  P = "je suis un étudiant"
+  Q = "j'ai des bonnes notes"
+  R = "je vais en cours"
+
+  On traduit l'affirmation en formule logique :
+  (P and Q) => R
+
+  Cette formule est vraie.
+
+Question 2 :
+  etudiant(claus).
+  etudiant(timoleon).
+  etudiant(paul).
+  note(timoleon, 15).
+  note(claus, 9).
+  bonne_note(X) :- note(X,Y), Y>=14.
+  venir_amphi(X) :- bonne_note(X).
+
+Question 3 :
+  Timoleon venait en amphi. On utilise la requête venir_amphi(X) pour
+  observer ce résultat. note(X,Y) donne l'ensemble des possibles pour X
+  et Y au vu de la base de données (question 2) et on recherche le critère
+  Y>=14. Les X tels que bonne_note(X) soit vrai sont résultats de
+  venir_amphi(X).
+
+Question 4 :
+  On a envie de poser la requête not(venir_amphi(X)) mais Datalog va 
+  rechercher les solutions X dans un ensemble qui n'est pas inclus dans
+  notre monde. On a en Datalog l'hypothèse de monde clos (CLOSED WORLD
+  ASSUMPTION) qui dit qu'un fait est faux si on échoue à montrer en temps
+  fini qu'il est vrai (i.e. ce qui est vrai doit être connu par la base
+  de données) et qu'un fait est vrai s'il est démontrable en temps fini.
+  Il n'y a pas de monde extérieur contenant des éléments de preuve
+  inconnus du programme.
+
+  * not(venir_amphi(X)) renvoie donc une erreur,
+  * not(venir_amphi(X)), etudiant(X) renvoie également une erreur car la
+    négation ne connaît pas encore l'ensemble des possibles défini par
+    etudiant(X),
+  * etudiant(X), not(venir_amphi(X)) convient, il faut faire attention à
+    définir l'ensemble des possibles avant d'utiliser des négations.
+
+
+Exercice 3 :
+------------
+
+Question 1 : OSEF
+
+Question 2 :
+  ( TIGRE(1) or PRINCESSE(1) ) and ( TIGRE(2) or PRINCESSE(2) )
+
+Question 3 :
+  ( TIGRE(1) or PRINCESSE(2) ) and PRINCESSE(1)
+  On ne peut avoir TIGRE(1) and PRINCESSE(1) d'après la question 2, 
+  donc cette formule est vraie pour PRINCESSE(2) and PRINCESSE(1).
+  Cela ne satisfait pas l'hypothèse d'avoir une princesse dans une
+  cellule et un tigre dans l'autre.
+  On en déduit donc, en utilisant les propos du roi, que les deux
+  affiches mentent.
+
+Question 4 :
+  not(TIGRE(1)) and not(PRINCESSE(2)) and not(PRINCESSE(1))
+  On voit plus clairement l'impossibilité de satisfaire les données
+  de l'énoncé.
+
+Question 5 à 8 :
+  cf fichier princesse1.dl, il faudrait cependant rajouter X\=Y dans
+  solutions et alt_solutions pour éviter les couples (tigre,tigre) et
+  (princesse,princesse) comme solutions.
+  Datalog montre également qu'il n'y a pas de solutions à ce problème.

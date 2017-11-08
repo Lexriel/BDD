@@ -1,0 +1,189 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc} %%pour taper directement les lettres accentuées
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{anysize} %%pour pouvoir mettre les marges qu'on veut
+\marginsize{2.5cm}{2.5cm}{1.5cm}{1.5cm}
+
+% \usepackage{indentfirst} %%pour que les premier paragraphes soient aussi indentés
+\usepackage{amsfonts,amssymb,amsmath,amsthm}
+\usepackage{hyperref}
+% \hypersetup{pdfstartview=XYZ}
+\usepackage{enumerate}
+\usepackage{array}
+\usepackage{verbatim}
+\usepackage{eurosym}
+\usepackage{amssymb}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{IE1 de BDD - correction}}
+\end{center}
+
+\noindent\hrulefill
+\vspace{0.5cm}
+
+\noindent
+\textbf{Question 1 (0.5pt)}
+
+\noindent
+La requête se traduit en RA par :
+\begin{verbatim}
+PROJECT[aid](SELECT[prix>20](Catalogue));
+\end{verbatim}
+
+\noindent
+\textit{Attendu :} distinguer en algèbre relationnelle les opération de projection et de sélection. On fait une projection d'attributs pour afficher une colonne. On fait une sélection de tuples pour afficher des lignes selon un critère (les clauses WHERE).
+
+\noindent
+\textit{Détail :} formule d'algèbre relationnelle, similaire à la syntaxe de RA, acceptée :
+$\pi_{aid}(\sigma_{prix>20}(Catalogue)).$
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 2 (1pt)}
+
+\noindent
+Les requêtes $A$ et $B$ ne sont pas équivalentes, on peut donner le contre-exemple avec les relations suivantes, où $R_1 - R_2 = R_1$ (comme la ligne de $R_2$ n'apparaît pas dans $R_1$).
+
+\vspace{0.1cm}
+\noindent
+Pour 
+  $
+  \begin{array}{c}
+    R_1 \\
+    \begin{array}{|c|c|}
+      \hline
+      c & d \\
+      \hline
+      1 & 0 \\
+      2 & 4 \\
+      \hline
+    \end{array}
+  \end{array}$
+  et
+  $
+  \begin{array}{c}
+    R_2 \\
+    \begin{array}{|c|c|}
+      \hline
+      c & d \\
+      \hline
+      1 & 5 \\
+      \hline
+    \end{array}
+  \end{array}$ :
+  $\pi_{c}(R_1-R_2) = \pi_{c}(R_1) =
+  \begin{array}{|c|}
+    \hline
+    c \\
+    \hline
+    1 \\
+    2 \\
+    \hline
+  \end{array}
+  $
+et
+  $\pi_{c}(R_1)-\pi_{c}(R_2) = 
+  \begin{array}{|c|}
+    \hline
+    c \\
+    \hline
+    1 \\
+    2 \\
+    \hline
+  \end{array}
+  -
+  \begin{array}{|c|}
+    \hline
+    c \\
+    \hline
+    1 \\
+    \hline
+  \end{array}
+  =
+  \begin{array}{|c|}
+    \hline
+    c \\
+    \hline
+    2 \\
+    \hline
+  \end{array}$.
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 3 (1pt)}
+
+\noindent
+La commande SQL pour créer, avec clés primaires/étrangères, la table Catalogue(aid,fid,prix) est :
+\begin{verbatim}
+CREATE TABLE Catalogue(
+fid int references Fournisseurs(fid) on update cascade on delete cascade,   
+aid int references Articles(aid) on update cascade on delete cascade, 
+prix numeric(8,2) not NULL check (prix >0),
+primary key (fid,aid));
+\end{verbatim}
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 4 (1pt)}
+
+\noindent
+La commande SQL suivante est fausse, les erreurs ont été soulignées.
+
+\noindent
+select fid \underline{in} Articles\underline{, Vendeurs} where prix>20\underline{\euro{}} \underline{\&\&} \underline{coul}=\underline{ red }
+
+\noindent
+La syntaxe correcte est la suivante :
+\begin{verbatim}
+SELECT fid FROM Articles NATURAL JOIN Catalogue
+WHERE prix>20 and acoul='rouge';
+\end{verbatim}
+
+\noindent
+\textit{Attendus :} changer in en from, le produit cartésien en jointures
+naturelles avec la table Catalogue au lieu de Vendeurs, virer \euro{}, changer
+\&\& en and, mettre la couleur entre guillemets.
+
+\noindent
+\textit{Détails (non comptés faux faute de précision dans l'énoncé) :} nom
+de couleur red (au lieu de rouge), nom du champ de couleur (acoul).
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 5 (0.5pt)}
+
+\noindent
+Cette requête TRC renvoie le nom des employés non-certifiés (non-pilotes) qui ont un salaire plus élevé qu'au-moins un pilote.
+
+\vspace{0.3cm}
+\noindent
+\textbf{Question 6 (1pt)}
+
+\noindent
+Cette requête peut être écrite en SQL, soit à partir de la requête TRC ainsi :
+
+\begin{verbatim}
+SELECT enom FROM employes e WHERE
+not EXISTS(SELECT * FROM certifications c WHERE e.eid=c.eid) and
+EXISTS(SELECT * FROM employes e2 NATURAL JOIN certifications WHERE
+       e2.salaire<e.salaire);
+\end{verbatim}
+
+\noindent
+ou directement avec sa traduction :
+
+\begin{verbatim}
+(SELECT enom FROM employes e
+   WHERE e.salaire > SOME(
+     SELECT salaire FROM employes NATURAL JOIN certifications))
+EXCEPT
+(SELECT enom FROM employes NATURAL JOIN certifications);
+\end{verbatim}
+
+
+\end{document}

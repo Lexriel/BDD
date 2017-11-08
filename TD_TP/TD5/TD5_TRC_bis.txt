@@ -1,0 +1,106 @@
+-- Exercice : Transcription TRC en PostGreSQL
+
+-- Question 1 :
+-- Modifier la requête TRC suivante pour l'écrire en PostGreSQL.
+{t| exists a in R1, b in R2:
+      t[x]=a[x] and
+      t[y]=b[y] and
+      a[z]=b[z] and
+      forall c in R3:
+        (c[x]=a[x] and not(c[id]=b[id]) => c[y]=b[y]
+}
+
+-- Suppression de l'implication avec De Morgan
+{t| exists a in R1, b in R2:
+      t[x]=a[x] and
+      t[y]=b[y] and
+      a[z]=b[z] and
+      forall c in R3:
+        not(c[x]=a[x] and not(c[id]=b[id]))
+        or
+        c[y]=b[y]
+}
+
+-- Suppression de la double négation
+{t| exists a in R1, b in R2:
+      t[x]=a[x] and
+      t[y]=b[y] and
+      a[z]=b[z] and
+      forall c in R3:
+        c[x]<>a[x] or
+        c[id]=b[id] or
+        c[y]=b[y]
+}
+
+-- Suppression de forall
+{t| exists a in R1, b in R2:
+      t[x]=a[x] and
+      t[y]=b[y] and
+      a[z]=b[z] and
+      not exists c in R3:
+        c[x]=a[x] and
+        not(c[id]=b[id]) and
+        c[y]=b[y]
+}
+
+-- Requête postgreSQL
+SELECT x, y FROM R1 as a, R2 as b WHERE
+a.z = b.z and
+not EXISTS(
+  SELECT * FROM R3 as c WHERE
+  c.x=a.x and
+  not(c.id=b.id) and
+  c.y=b.y
+);
+
+
+
+-- Question 2 :
+-- Ecrire la requête TRC donnant les aid d'avions qui peuvent être
+-- volés par tous les pilotes ayant un salaire >100kE, puis la
+-- modifier pour pouvoir l'écrire en PostGreSQL.
+
+-- Requête TRC
+{t| exists a in avions:
+      t[aid]=a[aid] and
+      forall e in employes, c in certifications:
+        (c[eid]=e[eid] and e[salaire]>100000) =>
+        (exists c2 in certifications:
+           c2[eid]=e[eid] and c2[aid]=a[aid])
+}
+-- On recherche les aid des avions tels que pour tous les pilotes :
+-- si le pilote considéré a son salaire supérieur à 100000,
+-- alors on trouve une certifications de ce pilote pour l'avion aid.
+
+-- Suppression de l'implication avec De Morgan
+{t| exists a in avions:
+      t[aid]=a[aid] and
+      forall e in employes, c in certifications:
+        not(c[eid]=e[eid] and e[salaire]>100000)
+        or
+        (exists c2 in certifications:
+          c2[eid]=e[eid] and c2[aid]=a[aid])
+}
+
+-- Suppression de forall
+{t| exists a in avions:
+      t[aid]=a[aid] and
+      not exists e in employes, c in certifications:
+        (c[eid]=e[eid] and e[salaire]>100000)
+        and
+        (not exists c2 in certifications:
+          c2[eid]=e[eid] and c2[aid]=a[aid])
+}
+
+-- Requête PostGreSQL
+SELECT aid FROM avions a WHERE
+not EXISTS(
+  SELECT * FROM employes e, certifications c WHERE
+  e.eid=c.eid and
+  e.salaire>100000 and
+  not EXISTS(
+    SELECT * FROM certifications c2 WHERE
+    c2.eid=e.eid and
+    c2.aid=a.aid
+  )
+);

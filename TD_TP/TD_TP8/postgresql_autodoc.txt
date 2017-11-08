@@ -1,0 +1,23 @@
+Le logiciel postgresql_autodoc permet de générer un diagramme logique
+d'une base de données sous différents formats tels que dot, html, xml.
+On peut visualiser la base de données via un fichier pdf généré à partir
+de ces fichiers, ou encore via une page html.
+
+# installation
+alexandre@cezarken:~$ sudo apt-get install postgresql-autodoc
+
+# Création de la base de données
+alexandre@cezarken:~$ sudo -i -u postgres
+postgres@cezarken:~$ createdb Atelier
+postgres@cezarken:~$ psql Atelier 
+
+# Charger un fichier sql contenant les tables (ne fonctionne pas)
+Atelier=# \i fichier.sql
+# Copier-coller des tables du fichier TP8_base_de_donnees_atelier.sql
+
+# Générer le diagramme dans le dossier Diagramme
+postgres@cezarken:~$ postgresql_autodoc -d Atelier 
+  # Ouvrir un nouveau terminal
+alexandre@cezarken:~$ cd Diagramme
+alexandre@cezarken:~/Diagramme$ cp /var/lib/postgresql/Atelier.* .
+alexandre@cezarken:~/Diagramme$ dot -Tpdf Atelier.dot -o diagramme_atelier.pdf

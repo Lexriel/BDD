@@ -1,0 +1,33 @@
+-- Exercice 2 --
+----------------
+
+-- Question 1
+PROJECT[fnom](
+  SELECT[acoul='rouge'](fournisseurs JOIN catalogue JOIN articles)
+);
+
+% Number of tuples = 5
+% kiventout:
+% Big Red Tool and Die:
+% Perfunctory Parts:
+% Alien Aircaft Inc.:
+% Autolux:
+
+-- Question 2
+PROJECT[fid](
+  SELECT[fid=fid2 and aid<>aid2](
+    PROJECT[fid,aid](
+      SELECT[acoul='rouge'](fournisseurs JOIN catalogue JOIN articles)
+    )
+    TIMES
+    RENAME[fid2,aid2](
+      PROJECT[fid,aid](
+        SELECT[acoul='rouge'](fournisseurs JOIN catalogue JOIN articles)
+      )
+    )
+  )
+);
+
+% Number of tuples = 2
+% 1:
+% 2:

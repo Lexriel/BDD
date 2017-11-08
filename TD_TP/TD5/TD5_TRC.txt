@@ -1,0 +1,155 @@
+-- Question 1
+-- Donner les noms de tous les employés :
+{t | exists e in employes:
+       t[nom]=e[enom] 
+}
+SELECT enom as nom FROM employes e;
+
+-- Question 2
+-- Donner uniquement les noms des pilotes :
+{t | exists e in employes,
+     exists c in certifications:
+       t[nom]=e[enom] and
+       e[eid]=c[eid]
+}
+SELECT enom as nom FROM employes e NATURAL JOIN certifications;
+SELECT enom as nom FROM employes e
+WHERE EXISTS (SELECT * FROM certifications c WHERE e.eid=c.eid);
+
+-- Question 3
+-- Donner les noms des employes non-pilotes :
+{t | exists e in employes:
+       (t[nom]=e[enom] and
+       not exists c in certifications:
+         c[eid]=e[eid])
+}
+SELECT enom as nom FROM employes e
+WHERE e.eid NOT IN (SELECT eid FROM certifications c);
+SELECT enom as nom FROM employes e
+WHERE NOT EXISTS (SELECT * FROM certifications c WHERE e.eid=c.eid);
+
+-- Question 4 (ancienne version)
+-- Donner les eids de pilotes qualifiés pour un airbus :
+{t | exists c in certifications, a in avions:
+       (
+         t[eid]=c[eid] and
+         c[aid]=a[aid] and
+         a[anom]='airbus%'
+       )
+}
+
+-- Question 4
+-- Donner les noms des pilotes qualifiés pour un airbus :
+{t | exists c in certifications, a in avions, e in employes:
+       (
+         t[nom]=e[enom] and
+         e[eid]=c[eid]  and
+         c[aid]=a[aid]  and
+         a[anom]='airbus%'
+       )
+}
+SELECT enom as nom
+FROM employes e NATURAL JOIN certifications c NATURAL JOIN avions a
+WHERE anom like 'airbus%';
+SELECT enom as nom FROM employes e
+WHERE EXISTS (SELECT * FROM certifications c WHERE e.eid=c.eid);
+
+-- Question 5
+-- Donner les noms des pilotes non-qualifiés pour un airbus :
+{t | exists c in certifications, exists e in employes:
+     t[nom]=e[enom] and
+     e[eid]=c[eid]  and
+     not exists c2 in certifications, a in avions:
+       c2[eid]=c[eid] and
+       a[aid]=c2[aid] and
+       a[anom]='airbus%'
+}
+SELECT enom as nom FROM employes e NATURAL JOIN certifications c
+WHERE not EXISTS
+  (SELECT * FROM certifications c2 NATURAL JOIN avions a
+   WHERE c.eid=c2.eid and a.anom like 'airbus%');
+
+-- Question 6
+-- Donner les noms des avions qui peuvent être utilisés sur la ligne CDG - NOU :
+{t | exists a in avions, exists v in vols:
+     t[nom]=a[anom] and 
+     v[dep]='CDG'   and
+     v[arr]='NOU'   and
+     v[distance]<=a[portee]
+}
+SELECT anom as nom FROM avions a, vols v
+WHERE v[dep]='CDG' and v[arr]='NOU' and v[distance]<=a[portee];
+
+-- Question 7
+-- Donner les identifiants et prix du vol le moins cher de CDG à NOU :
+{t | exists v1 in vols:
+     t[vid,prix]=v1[vid,prix] and v1[dep]='CDG' and v2[arr]='NOU' and
+     not exists v2 in vols: 
+       v1[prix] > v2[prix] and v2[dep]='CDG' and v2[arr]='NOU'
+}
+SELECT vid, prix FROM vols v WHERE prix = (SELECT min(prix) FROM vols);
+
+-- Question 8
+-- Donner les noms des pilotes dont le salaire est inférieur au prix
+-- du vol le moins cher de CDG à NOU :
+{t | exists e1 in employes, c in certifications:
+     t[enom,eid]=e1[enom,eid] and e1[eid]=c[eid] and
+     not exists v in vols:
+       v.prix < e1[salaire] and v[dep]='CDG' and v[arr]='NOU'
+}
+SELECT enom FROM employes e NATURAL JOIN certifications c
+WHERE e.salaire<(SELECT min(prix) FROM vols v WHERE v.dep='CDG' and v.arr='NOU');
+
+-- Question 9
+-- Donner pour chaque pilote, son eid et nom, et la portée maximale
+-- d'avions pour lesquels il est qualifié :
+
+{t | exists e1 in employes, c1 in certifications, a1 in avions:
+       t[eid,enom]=e1[eid,enom] and
+       c1[eid]=e1[eid] and
+       a1[aid]=c1[aid] and 
+       t[portee]= a1[portee] and
+       not exists c2 in certifications, a2 in avions:
+         c2[eid]=e1[eid] and
+         a2[aid]=c2[aid] and
+         a2[portee]>a1[portee]
+}
+SELECT e1.enom, c1.eid, a1.portee FROM employes e1, certifications c1, avions a1 WHERE
+e1.eid=c1.eid and
+c1.aid=a1.aid and
+not EXISTS(SELECT * FROM certifications c2 NATURAL JOIN avions a2 WHERE a2.portee>a1.portee);
+
+-- Question 10
+-- Donner les noms de pilotes uniquement certifiés pour des avions avec 
+-- une portée de plus 1500km :
+
+{t | exists e in employes, c in certifications, a in avions:
+     t[eid,enom]=e[eid,enom] and
+     e[eid]=c[eid] and
+     a[portee] > 1500 and
+     forall c1 in certifications, forall a1 in avions:
+       (c1[aid]=a1[aid] and c1[eid]=e[eid]) => a1[portee]>1500
+}
+-- Après transcription TRC->SQL, on pourrait écrire en postgreSQL :
+SELECT e.eid, e.enom FROM employes e NATURAL JOIN certifications c WHERE
+not EXISTS(
+  SELECT * FROM certifications c1  NATURAL JOIN avions a1 WHERE
+    c1.eid=e.eid and a1.portee<=1500)
+);
+
+-- Question 11
+-- Donner les pilotes uniquement certifiés pour des avions avec une portée
+-- de plus de 1500km, pour au moins deux tels avions :
+{t | exists e in employes, c in certifications, a in avions:
+     t[eid,enom]=e[eid,enom] and
+     e[eid]=c[eid]           and
+     a[portee] > 1500        and
+     forall c2 in certifications, a2 in avions:
+        (c2[eid]=e[eid] and c2[aid]=a2[aid]) => a2[portee]>1500
+     and
+     exists c3 in certifications, a3 in avions:
+       c3[eid]=e[eid]  and
+       c3[aid]=a3[aid] and
+       a3[aid]<>a[aid] and
+       a3[portee]>1500
+}

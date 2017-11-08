@@ -1,0 +1,296 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc} %%pour taper directement les lettres accentuées
+\usepackage[francais]{babel}
+\usepackage[T1]{fontenc}
+
+\usepackage{anysize} %%pour pouvoir mettre les marges qu'on veut
+\marginsize{2.5cm}{2.5cm}{2.5cm}{2.5cm}
+
+\usepackage{indentfirst} %%pour que les premier paragraphes soient aussi indentés
+\usepackage{amsfonts,amssymb,amsmath,amsthm}
+\usepackage{hyperref}
+\hypersetup{pdfstartview=XYZ}
+\usepackage{enumerate}
+\usepackage{array}
+\usepackage{verbatim}
+\usepackage{eurosym}
+\usepackage{amssymb}
+
+\newtheoremstyle{exostyle}
+{\topsep}% espace avant
+{\topsep}% espace apres
+{}% Police utilisee par le style de thm
+{}% Indentation (vide = aucune, \parindent = indentation paragraphe)
+{\bfseries}% Police du titre de thm
+{.}% Signe de ponctuation apres le titre du thm
+{\newline}% Espace apres le titre du thm (\newline = linebreak)
+{\thmname{#1}\thmnumber{ #2}\thmnote{. \normalfont{\textit{#3}}}}% composants du titre du thm : \thmname = nom du thm, \thmnumber = numéro du thm, \thmnote = sous-titre du thm
+
+\theoremstyle{exostyle}
+\newtheorem{exercice}{Exercice}
+
+\newenvironment{questions}{
+
+\begin{enumerate}[\hspace{12pt}\bfseries\itshape 1.]}{
+\end{enumerate}
+
+} %mettre un 1 à la place du a si on veut des numéros au lieu de lettres pour les questions 
+
+
+
+
+
+
+
+
+
+
+\begin{document}
+
+\centering{\Large \textbf{TD1 - TP1 : Introduction aux Bases de Données Relationnelles}}
+
+\noindent\hrulefill
+\vspace{0.5cm}
+
+\begin{exercice}[Requêtes d'algèbre relationnelle reposant sur une seule relation]
+Exprimons les requêtes suivantes en utilisant l'algèbre
+relationnelle. Ces mêmes requêtes sont ensuite exprimées en langage RA
+pour le TP.
+
+\begin{questions}
+\item Afficher les noms des fournisseurs :\\
+  $\pi_{fnom}(fournisseurs)$
+\begin{verbatim}
+PROJECT[fnom](fournisseurs);
+\end{verbatim}
+
+\item Afficher le détail des fournisseurs parisiens :\\
+$\sigma_{fad='Paris'}(fournisseurs)$
+\begin{verbatim}
+SELECT[fad='Paris'](fournisseurs);
+\end{verbatim}
+
+\item Afficher les noms des fournisseurs parisiens :\\
+$\pi_{fnom}(\sigma_{fad='Paris'}(fournisseurs))$
+\begin{verbatim}
+PROJECT[fnom](SELECT[fad='Paris'](fournisseurs));
+\end{verbatim}
+
+\item Afficher le nom des articles verts :\\
+$\pi_{anom}(\sigma_{acoul='vert'}(articles))$
+\begin{verbatim}
+PROJECT[anom](SELECT[acoul='vert'](articles));
+\end{verbatim}
+
+\item Afficher les identifiants d'articles à moins de 20\euro :\\
+$\pi_{aid}(\sigma_{prix<20}(catalogue))$
+\begin{verbatim}
+PROJECT[aid](SELECT[prix<20](catalogue));
+\end{verbatim}
+
+\item Afficher les identifiants de fournisseurs d'articles à moins de 20\euro :\\
+$\pi_{fid}(\sigma_{prix<20}(catalogue))$
+\begin{verbatim}
+PROJECT[fid](SELECT[prix<20](catalogue));
+\end{verbatim}
+
+\item Afficher les identifiants de fournisseurs offrant des articles entre 10 et 20\euro :\\
+$\pi_{fid}(\sigma_{prix<20 \ AND\ prix>10}(catalogue))$
+\begin{verbatim}
+PROJECT[fid](SELECT[prix<20 AND prix>10](catalogue));
+\end{verbatim}
+
+\item Afficher les identifiants de fournisseurs offrant des articles entre 10 et 20\euro{} en utilisant une intersection :\\
+$\pi_{fid}(\sigma_{prix<20}(catalogue)) \cap \pi_{fid}(\sigma_{prix>10}(catalogue))$
+\begin{verbatim}
+PROJECT[fid](SELECT[prix<20](catalogue))
+INTERSECT
+PROJECT[fid](SELECT[prix>10](catalogue));
+\end{verbatim}
+
+\item Afficher les noms d'articles rouges ou verts :\\
+$\pi_{anom}(\sigma_{acoul='vert'\ OR\ acoul='rouge'}(articles))$\\
+Le OR n'est pas implémenté dans RA, il faut recourir à une union de sélections ou à une union de projections comme suit :\\
+$\pi_{anom}(\sigma_{acoul='rouge'}(articles) \cup \sigma_{acoul='vert'}(articles))$\\
+$\pi_{anom}(\sigma_{acoul='rouge'}(articles)) \cup \pi_{anom}(\sigma_{acoul='vert'}(articles))$
+\begin{verbatim}
+PROJECT[anom](SELECT[acoul='rouge'](articles)
+              UNION
+              SELECT[acoul='vert'](articles));
+PROJECT[anom](SELECT[acoul='rouge'](articles))
+UNION
+PROJECT[anom](SELECT[acoul='vert'](articles));
+\end{verbatim}
+
+
+\item Afficher les noms d'articles rouges et verts (trois requêtes équivalentes) :\\
+$\pi_{anom}(\sigma_{acoul='vert'\ AND\ acoul='rouge'}(articles))$\\
+$\pi_{anom}(\sigma_{acoul='rouge'}(articles) \cap \sigma_{acoul='vert'}(articles))$\\
+$\pi_{anom}(\sigma_{acoul='rouge'}(articles)) \cap \pi_{anom}(\sigma_{acoul='vert'}(articles))$
+\begin{verbatim}
+PROJECT[anom](SELECT[acoul='rouge' AND acoul='vert'](articles));
+PROJECT[anom](SELECT[acoul='rouge'](articles)
+              INTERSECT
+              SELECT[acoul='vert'](articles));
+PROJECT[anom](SELECT[acoul='rouge'](articles))
+INTERSECT
+PROJECT[anom](SELECT[acoul='vert'](articles));
+\end{verbatim}
+\end{questions}
+
+\end{exercice}
+
+
+\begin{exercice}[Compréhension d'expressions complexes]
+Rappel de notation: $A\star B$ est  la jointure naturelle entre les relations $A$ et $B$, \textit{i.e.} avec la condition d'égalité sur le(s) attribut(s) commun(s) aux deux relations.
+
+\begin{questions}
+\item Cette commande renvoie le nom des fournisseurs proposant des articles rouges à moins de 100\euro{} dans le catalogue.\\
+$\pi_{fnom}(\sigma_{acoul='rouge'}(articles) \star \sigma_{prix<100}(catalogue) \star fournisseurs)$
+\begin{verbatim}
+PROJECT[fnom](SELECT[acoul='rouge'](articles)
+              JOIN
+              SELECT[prix<100](catalogue)
+              JOIN
+              fournisseurs)
+UNION
+PROJECT[fnom](SELECT[acoul='rouge'](articles)
+              JOIN
+              SELECT[prix<100](catalogue)
+              JOIN
+              fournisseurs);
+\end{verbatim}
+
+\item Cette commande renvoie le nom des fournisseurs proposant des articles rouges ou verts à moins de 100\euro{} dans le catalogue.\\
+$\pi_{fnom}(\sigma_{acoul='rouge'}(articles) \star \sigma_{prix<100}(catalogue) \star fournisseurs)\newline \cup\ \pi_{fnom}(\sigma_{acoul='vert'}(articles) \star \sigma_{prix<100}(catalogue) \star fournisseurs)$
+\begin{verbatim}
+PROJECT[fnom](SELECT[acoul='rouge'](articles)
+              JOIN
+              SELECT[prix<100](catalogue)
+              JOIN
+              fournisseurs);
+\end{verbatim}
+
+\end{questions}
+
+\end{exercice}
+
+\begin{exercice}[Requête d'algèbre relationnelle reposant sur plusieurs relations]
+Exprimons les requêtes suivantes en utilisant l'algèbre
+relationnelle. Ces mêmes requêtes sont ensuite exprimées en langage RA
+pour le TP.
+
+\begin{questions}
+\item Afficher les noms des articles fournissables :\\
+  $\pi_{anom}(articles \star catalogue)$
+\begin{verbatim}
+PROJECT[anom](articles JOIN catalogue);
+\end{verbatim}
+
+\item Afficher les noms des articles fournissables avec les prix et le nom du fournisseur correspondant :\\
+  $\pi_{anom,prix,fnom}(articles \star catalogue \star fournisseurs)$
+\begin{verbatim}
+PROJECT[anom,prix,fnom](articles JOIN catalogue JOIN fournisseurs);
+\end{verbatim}
+
+\item Afficher les identifiants de fournisseurs offrant des articles rouges :\\
+  $\pi_{fid}(\sigma_{acoul='rouge'}(articles) \star catalogue)$
+\begin{verbatim}
+PROJECT[fid](SELECT[acoul='rouge'](articles JOIN catalogue));
+\end{verbatim}
+
+\item Afficher les noms des fournisseurs proposant des articles à moins de 20\euro{} :\\
+  $\pi_{fnom}(\sigma_{prix<20}(catalogue) \star fournisseurs)$
+\begin{verbatim}
+PROJECT[fnom](SELECT[prix<20](catalogue JOIN fournisseurs));
+\end{verbatim}
+
+\item Afficher les identifiants des fournisseurs proposant uniquement des articles à plus de 10000\euro{} :\\
+  $\pi_{fid}(catalogue) - \pi_{fid}(\sigma_{prix<10000}(catalogue))$
+\begin{verbatim}
+PROJECT[fid](catalogue)
+MINUS
+PROJECT[fid](SELECT[prix<10000](catalogue));
+\end{verbatim}
+
+\item Afficher les identifiants des fournisseurs proposant uniquement des articles à plus de 10000\euro{} :\\
+  $\pi_{fid}(catalogue) - \pi_{fid}(\sigma_{prix<10000}(catalogue))$
+\begin{verbatim}
+PROJECT[fid](catalogue)
+MINUS
+PROJECT[fid](SELECT[prix<10000](catalogue));
+\end{verbatim}
+
+\item Afficher toutes les combinaisons possibles d'un article vert avec un article rouge en donnant leurs identifiants :\\
+  $\pi_{aid}(\sigma_{acoul='vert'}(articles)) \times \pi_{aid}(\sigma_{acoul='rouge'}(articles))$
+\begin{verbatim}
+PROJECT[aid](SELECT[acoul='vert'](articles))
+TIMES
+PROJECT[aid](SELECT[acoul='rouge'](articles));
+\end{verbatim}
+Il y a $2\times 4 = 8$ combinaisons possibles dans la base de données ``boutique''.
+
+\item Afficher les identifiants d'articles ne pouvant être commandés chez aucun fournisseur :\\
+  $\pi_{aid}(articles) - \pi_{aid}(catalogue)$
+\begin{verbatim}
+PROJECT[aid](articles)
+MINUS
+PROJECT[aid](catalogue);
+\end{verbatim}
+
+\item Afficher les noms d'articles ne pouvant être commandés chez aucun fournisseur :\\
+  $\pi_{anom}(articles) - \pi_{anom}(catalogue \star articles)$
+\begin{verbatim}
+PROJECT[anom](articles)
+MINUS
+PROJECT[anom](catalogue JOIN articles);
+\end{verbatim}
+
+\item Afficher les identifiants de fournisseurs qui fournissent des articles verts et aussi des articles rouges :\\
+  $\pi_{fid}(\sigma_{acoul='vert'}(articles) \star catalogue)\ \cap\ \pi_{fid}(\sigma_{acoul='rouge'}(articles) \star catalogue)$
+\begin{verbatim}
+PROJECT[fid](SELECT[acoul='vert'](articles) JOIN catalogue)
+INTERSECT
+PROJECT[fid](SELECT[acoul='rouge'](articles) JOIN catalogue);
+\end{verbatim}
+
+\item Afficher les noms de fournisseurs d'articles noirs :\\
+  $\pi_{fnom}(\sigma_{acoul='noir'}(articles) \star catalogue \star fournisseurs)$
+\begin{verbatim}
+PROJECT[fnom](SELECT[acoul='noir'](articles) JOIN catalogue JOIN fournisseurs);
+\end{verbatim}
+
+\item Afficher les identifiants d'articles qui peuvent être fournis par plusieurs fournisseurs :\\
+  $\pi_{aid}(\sigma_{aid=aid2\ AND\ fid\neq fid2}(catalogue \times \rho_{fid2,aid2,prix2}(catalogue)))$
+\begin{verbatim}
+PROJECT[aid](SELECT[aid=aid2 AND fid<>fid2](catalogue
+                                            TIMES
+                                            RENAME[fid2,aid2,prix2](catalogue)));
+\end{verbatim}
+
+\item Afficher les noms de fournisseurs qui n'offrent ni des articles noirs, ni des articles argentés :\\
+  $\pi_{fnom}(fournisseurs) - (\pi_{fnom}(\sigma_{acoul='noir'}(articles) \star catalogue \star fournisseurs)\newline \cup \pi_{fnom}(\sigma_{acoul='argente'}(articles) \star catalogue \star fournisseurs))$\\
+On peut aussi formuler cette requête ainsi :\\
+  $(\pi_{fnom}(fournisseurs) - \pi_{fnom}(\sigma_{acoul='noir'}(articles) \star catalogue \star fournisseurs) )\newline - \pi_{fnom}(\sigma_{acoul='argente'}(articles) \star catalogue \star fournisseurs)$\\
+
+
+\begin{verbatim}
+PROJECT[fnom](fournisseurs)
+MINUS
+(
+  PROJECT[fnom](SELECT[acoul='noir'](articles) JOIN catalogue JOIN fournisseurs)
+  UNION
+  PROJECT[fnom](SELECT[acoul='argente'](articles) JOIN catalogue JOIN fournisseurs)
+);
+\end{verbatim}
+
+\end{questions}
+
+\end{exercice}
+
+
+\end{document}
+
+
+

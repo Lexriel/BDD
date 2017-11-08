@@ -1,0 +1,268 @@
+
+Exercice 1 - Requêtes
+---------------------
+
+Question 1.1
+------------
+
+CREATE temp VIEW stat(age, niveau, nb) AS
+SELECT age, niveau, count(*) FROM etudiants
+GROUP BY age, niveau;
+
+SELECT age, niveau FROM stat s
+WHERE nb=(SELECT max(nb) FROM stat s2 WHERE s2.niveau=s.niveau);
+
+Question 1.2
+------------
+
+CREATE temp VIEW etud(eid, enom, age) AS(
+  SELECT e_id, e_nom, age
+  FROM etudiants NATURAL JOIN participer
+  NATURAL JOIN cours NATURAL JOIN profs	    
+  WHERE prof_nom='I.Boulala' and horaire like '%Me%'
+);
+
+SELECT enom FROM etud WHERE age<=ALL(SELECT age FROM etud);
+
+Question 1.3
+------------
+
+Une requête TRC aide ici :
+{t| exists p in profs:
+      t[prof_nom]=p[prof_nom] and
+      forall c1 in cours:
+        exists c2 in cours:
+	  c1.salle=c2.salle =>
+	  c2.prof_id=p.prof_id
+}
+
+On utilise "forall x: P(x)" équivalent à "not exists x: not P(x)" 
+{t| exists p in profs:
+      t[prof_nom]=p[prof_nom] and
+      not exists c1 in cours:
+        forall c2 in cours:
+	  not(c1.salle=c2.salle =>
+            c2.prof_id=p.prof_id)
+}
+
+On utilise "forall x: P(x)" équivalent à "not exists x: not P(x)" 
+{t| exists p in profs:
+      t[prof_nom]=p[prof_nom] and
+      not exists c1 in cours:
+        not exists c2 in cours:
+	  c1.salle=c2.salle =>
+          c2.prof_id=p.prof_id
+}
+
+On utilise "A => B" équivalent à "not A or B" 
+{t| exists p in profs:
+      t[prof_nom]=p[prof_nom] and
+      not exists c1 in cours:
+        not exists c2 in cours:
+	  c1.salle<>c2.salle or
+          c2.prof_id=p.prof_id
+}
+
+On peut maintenant écrire la requête :
+SELECT prof_nom FROM profs p
+WHERE not EXISTS(
+  SELECT * FROM cours c1 WHERE not EXISTS(
+    SELECT * FROM cours c2 
+    WHERE c1.salle<>c2.salle and c2.prof_id=p.prof_id
+  )
+);
+
+
+Question 1.4
+------------
+
+SELECT prof_nom, count(*) FROM profs p1 NATURAL JOIN cours
+WHERE salle='R128' and not EXISTS(
+  SELECT * FROM profs p2 NATURAL JOIN cours WHERE
+  p1.prof_id=p2.prof_id and salle<>'R128'
+)
+GROUP BY prof_id, prof_nom
+HAVING EVERY(salle='R128');
+
+
+Question 1.5
+------------
+
+answer(Nom) :- etudiants(Id, Nom, _, _), participe(Id, C1), cours(C1, _, H1, _, _), participe(Id, C2), cours(C2, _, H2, _, _), C1\=C2, H1=H2.
+
+
+Question 1.6
+------------
+
+PROJECT[titre](SELECT[age>=20](etudiants JOIN participer JOIN cours))
+MINUS
+PROJECT[titre](SELECT[age<20](etudiants JOIN participer JOIN cours));
+
+
+Question 1.7
+------------
+
+{ t| exists c1 in cours:
+       t[cours]=c1[titre] and
+       forall e in etudiants, p1 in participe:
+       (p1[e_id]=e[e_id]  and
+        c1[c_id]=p1[c_id] and
+        e[age]>=19) =>
+	  exists c2 in cours, p2 in participe:
+	    c2[c_id]=p1[c_id] and p2[e_id]=e[e_id]
+}
+
+
+Exercice 2 - TRC vers SQL
+-------------------------
+
+Question 2.1
+------------
+
+{ t| exists v in vols, exists a in avions, exists c in certifications:
+       t[vid]=v[vid] and a[aid]=c[aid] and v[distance]<=a[portee] and
+       forall c2 in certifications, forall a2 in avions:
+         (c2[aid]=a2[aid] and v[distance]<=a2[portee]) =>
+         c2[eid]=c[eid]
+}
+
+
+On supprime l'implication à l'aide de la formule de De Morgan :
+{ t| exists v in vols, exists a in avions, exists c in certifications:
+       t[vid]=v[vid] and a[aid]=c[aid] and v[distance]<=a[portee] and
+       forall c2 in certifications, forall a2 in avions:
+         not(c2[aid]=a2[aid] and v[distance]<=a2[portee]) or 
+         c2[eid]=c[eid]
+}
+
+On supprime les "pour tout" :
+{ t| exists v in vols, exists a in avions, exists c in certifications:
+       t[vid]=v[vid] and a[aid]=c[aid] and v[distance]<=a[portee] and
+       not exists c2 in certifications, not exists a2 in avions:
+         not(not(c2[aid]=a2[aid] and v[distance]<=a2[portee]) or 
+         c2[eid]=c[eid])
+}
+$
+
+On supprime les doubles négations :
+{ t| exists v in vols, exists a in avions, exists c in certifications:
+     t[vid]=v[vid] and a[aid]=c[aid] and v[distance]<=a[portee] and 
+     not exists c2 in certifications, not exists a2 in avions:
+     c2[aid]=a2[aid] and v[distance]<=a2[portee]) and 
+     c2[eid]<>c[eid])
+}
+
+On peut maintenant écrire la requête en SQL ainsi:
+SELECT vid FROM vols v, avions a NATURAL JOIN certifications c WHERE
+v.distance<=a.portee and not EXISTS(
+  SELECT * FROM avions a2 NATURAL JOIN certifications c2 WHERE
+  a2.portee>=v.distance and c2.eid<>c.eid
+);
+
+Question 2.2
+------------
+
+Les sous-requêtes de exists et de not exists sont au même niveau donc la
+sous-requête avec le not exists ne référence pas c à l'aide de la première
+sous-requête. Il faut donc imbriquer la sous-requête du not exists dans
+celle avec exists. La correction de la requête est donc la suivante :
+
+SELECT v.vid FROM vols v WHERE EXISTS(
+  SELECT * FROM certifications c, avions a
+  WHERE c.aid=a.aid and v.distance<=a.portee and
+  not EXISTS(
+    SELECT * FROM certifications c2, avions a2
+    WHERE c2.aid=a2.aid and c.eid<>c2.eid and v.distance<=a2.portee
+  )
+);
+
+
+Exercice 3 - Normalisation
+--------------------------
+
+Le salaire d'un prof devrait être déterminé par son grade et son échelon.
+On peut donc tester la dépendance fonctionnelle {grade, echelon}->{salaire}.
+Cette dépendance sera vraie si, pour tous tuples t1 et t2 de la relation
+profs, on a t1[grade,echelon]=t2[grade,echelon] => t1[salaire]=t2[salaire].
+Pour invalider cette dépendance, il suffit de trouver deux tuples t1 et
+t2 tels que t1[grade,echelon]=t2[grade,echelon] mais
+t1[salaire]<>t2[salaire] d'où la requête suivante.
+
+SELECT grade, echelon, salaire FROM prof p1 WHERE EXISTS(
+  SELECT * FROM profs p2 WHERE
+  p1.grade=p2.grade and p.echelon=p.echelon and p.salaire<>p2.salaire
+);
+
+Si cette requête ne renvoie pas de ligne, alors le salaire d'un prof sera
+bien déterminé par son grade et son échelon.
+Si cette requête renvoie au moins une ligne, le salaire d'un prof ne sera
+pas déterminé par son grade et son échelon.
+
+Question 3.2
+------------
+
+L'attribut B n'est jamais dans le membre droit des dépendances
+fonctionnelles donc B est nécessairement un attribut primaire de toute clé
+candidate de R.
+La cloture B+ ne vaut pas R donc B n'est pas une superclé.
+On a AB+=R, BC+=R et BD+=R donc AB, BC et BD sont des superclés. Comme toute
+clé primaire contient nécessairement B et que B n'est pas une clé primaire,
+on en déduit que AB, BC et BD sont des superclés minimales, i.e. des clés
+candidates de R.
+
+Question 3.3
+------------
+
+1/ Les attributs A et B n'étant jamais dans le membre droit des dépendances
+fonctionnelles, on en déduit que toute superclé contient AB.
+Comme AB+=R, AB est donc l'unique superclé minimale donc la clé de R.
+
+2/ R n'est pas 2NF car on a les dépendances partielles suivantes :
+   * AB->DEIJ (si on supprime B à gauche, A->DEIJ est vraie)  
+   * AB->FGH  (si on supprime A à gauche, B->FGH  est vraie)
+AB->C est bien une dépendance complète.
+On peut donc découper R ainsi :
+R1(A,B,C)     avec la clé AB
+R2(A,D,E,I,J) avec la clé A
+R3(B,F,G,H)   avec la clé B
+
+3/ R n'est pas 3NF car on a des attributs non-primaires transitivement
+   dépendants de clés :
+   * A->D et D->IJ
+   * B->F et F->GH
+On découpe R1, R2 et R3 ainsi :
+R1(A,B,C)  avec la clé AB
+R21(A,D,E) avec la clé A
+R22(D,I,J) avec la clé D
+R31(B,F)   avec la clé B
+R32(F,G,H) avec la clé F
+
+
+Question 3.4
+------------
+
+1/ Les attributs A, B et D n'étant jamais dans le membre droit des dépendances
+fonctionnelles, on en déduit que toute superclé contient AB.
+Comme ABD+=R, ABD est donc l'unique superclé minimale donc la clé de R.
+
+2/ R n'est pas 2NF car on a les dépendances partielles suivantes :
+   * ABD->C    (si on supprime D  à gauche, AB->C    est vraie)  
+   * ABD->EFGH (si on supprime A  à gauche, BD->EFGH est vraie)  
+   * ABD->IJ   (si on supprime AB à gauche, D->IJ    est vraie)
+Il n'y a pas de dépendance complète avec ABD dans le membre gauche, il faut
+donc une table contenant A,B et D.
+On découpe R ainsi :
+R1(A,B,D)       avec la clé ABD
+R2(A,B,C)       avec la clé AB
+R3(B,D,E,F,G,H) avec la clé BD
+R4(D,I,J)       avec la clé D
+
+3/ R n'est pas 3NF car on a des attributs non-primaires transitivement
+   dépendants de clés :
+   * BD->F et F->GH
+On découpe R1, R2, R3 et R4 ainsi :
+R1(A,B,D)    avec la clé ABD
+R2(A,B,C)    avec la clé AB
+R31(B,D,E,F) avec la clé BD
+R32(F,G,H)   avec la clé F
+R4(D,I,J)    avec la clé D

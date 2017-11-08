@@ -1,0 +1,742 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- $Header: /cvsroot/autodoc/autodoc/xml.tmpl,v 1.2 2006/05/16 19:01:27 rbt Exp $ -->
+
+<book id="database.Atelier" xreflabel="Atelier database schema"><title>Atelier Model</title>
+
+
+
+
+  <chapter id="public.schema"
+           xreflabel="public">
+    <title>Schema public</title>
+    <para>standard public schema</para>
+
+
+      <section id="public.table.commandes"
+               xreflabel="public.commandes">
+        <title id="public.table.commandes-title">
+         Table:
+         
+         <structname>commandes</structname>
+        </title>
+ 
+
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <structname>commandes</structname>
+            </title>
+
+
+            <varlistentry>
+              <term><structfield>id_commande</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+                <literal>PRIMARY KEY</literal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>quantite</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>client</structfield></term>
+              <listitem><para>
+                <type>character varying(30)</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>date_livraison</structfield></term>
+              <listitem><para>
+                <type>date</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>id_machine</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+
+
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+
+                <literal>REFERENCES</literal> <xref linkend="public.table.machines"/>
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+
+
+
+
+
+
+
+      </para>
+    </section>
+
+      <section id="public.table.composition-machines"
+               xreflabel="public.composition_machines">
+        <title id="public.table.composition-machines-title">
+         Table:
+         
+         <structname>composition_machines</structname>
+        </title>
+ 
+
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <structname>composition_machines</structname>
+            </title>
+
+
+            <varlistentry>
+              <term><structfield>id_machine</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+
+
+
+
+                <literal>PRIMARY KEY</literal>
+
+
+
+
+
+
+
+
+
+
+
+
+                <literal>REFERENCES</literal> <xref linkend="public.table.machines"/>
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>id_piece</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+
+
+
+
+                <literal>PRIMARY KEY</literal>
+
+
+
+
+
+
+
+
+
+
+
+
+                <literal>REFERENCES</literal> <xref linkend="public.table.pieces"/>
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>qte_piece</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+        <variablelist>
+          <title>Constraints on composition_machines</title>
+
+          <varlistentry>
+            <term>composition_machines_qte_piece_check</term>
+            <listitem><para>CHECK ((qte_piece &gt; 0))</para></listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+
+
+
+
+
+
+
+      </para>
+    </section>
+
+      <section id="public.table.machines"
+               xreflabel="public.machines">
+        <title id="public.table.machines-title">
+         Table:
+         
+         <structname>machines</structname>
+        </title>
+ 
+
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <structname>machines</structname>
+            </title>
+
+
+            <varlistentry>
+              <term><structfield>id_machine</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+                <literal>PRIMARY KEY</literal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>nom_machine</structfield></term>
+              <listitem><para>
+                <type>character varying(30)</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>prix</structfield></term>
+              <listitem><para>
+                <type>numeric(10,2)</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>description</structfield></term>
+              <listitem><para>
+                <type>text</type>
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+        <variablelist>
+          <title>Constraints on machines</title>
+
+          <varlistentry>
+            <term>machines_prix_check</term>
+            <listitem><para>CHECK ((prix &gt; (0)::numeric))</para></listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+
+
+
+
+        <itemizedlist>
+          <title>
+            Tables referencing commandes via Foreign Key Constraints
+          </title>
+
+          <listitem>
+            <para>
+              <xref linkend="public.table.commandes"/>
+            </para>
+          </listitem>
+
+
+
+          <listitem>
+            <para>
+              <xref linkend="public.table.composition-machines"/>
+            </para>
+          </listitem>
+
+        </itemizedlist>
+
+
+
+
+
+
+      </para>
+    </section>
+
+      <section id="public.table.p-fournisseurs"
+               xreflabel="public.p_fournisseurs">
+        <title id="public.table.p-fournisseurs-title">
+         Table:
+         
+         <structname>p_fournisseurs</structname>
+        </title>
+ 
+
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <structname>p_fournisseurs</structname>
+            </title>
+
+
+            <varlistentry>
+              <term><structfield>id_fournisseur</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+                <literal>PRIMARY KEY</literal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>fournisseur</structfield></term>
+              <listitem><para>
+                <type>character varying(30)</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>adresse</structfield></term>
+              <listitem><para>
+                <type>character varying(50)</type>
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>ville</structfield></term>
+              <listitem><para>
+                <type>character varying(20)</type>
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>telephone</structfield></term>
+              <listitem><para>
+                <type>numeric(10,0)</type>
+
+
+
+
+                      <literal>UNIQUE</literal>
+
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>fax</structfield></term>
+              <listitem><para>
+                <type>numeric(10,0)</type>
+
+
+
+
+                      <literal>UNIQUE</literal>
+
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+
+
+
+
+        <itemizedlist>
+          <title>
+            Tables referencing pieces via Foreign Key Constraints
+          </title>
+
+          <listitem>
+            <para>
+              <xref linkend="public.table.pieces"/>
+            </para>
+          </listitem>
+
+        </itemizedlist>
+
+
+
+
+
+
+      </para>
+    </section>
+
+      <section id="public.table.pieces"
+               xreflabel="public.pieces">
+        <title id="public.table.pieces-title">
+         Table:
+         
+         <structname>pieces</structname>
+        </title>
+ 
+
+
+        <para>
+          <variablelist>
+            <title>
+              Structure of <structname>pieces</structname>
+            </title>
+
+
+            <varlistentry>
+              <term><structfield>id_piece</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+                <literal>PRIMARY KEY</literal>
+
+
+
+
+
+
+
+
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>nom_piece</structfield></term>
+              <listitem><para>
+                <type>character varying(30)</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>en_stock</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+
+                <literal>NOT NULL</literal>
+
+
+
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+            <varlistentry>
+              <term><structfield>id_fournisseur</structfield></term>
+              <listitem><para>
+                <type>integer</type>
+
+
+
+
+
+
+
+
+
+
+
+
+                <literal>REFERENCES</literal> <xref linkend="public.table.p-fournisseurs"/>
+
+
+              </para>
+
+            </listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+        <variablelist>
+          <title>Constraints on pieces</title>
+
+          <varlistentry>
+            <term>pieces_check</term>
+            <listitem><para>CHECK ((((en_stock = 0) AND (id_fournisseur IS NOT NULL)) OR ((en_stock &lt;&gt; 0) AND (id_fournisseur IS NULL))))</para></listitem>
+          </varlistentry>
+
+        </variablelist>
+
+
+
+
+
+
+
+        <itemizedlist>
+          <title>
+            Tables referencing composition_machines via Foreign Key Constraints
+          </title>
+
+          <listitem>
+            <para>
+              <xref linkend="public.table.composition-machines"/>
+            </para>
+          </listitem>
+
+        </itemizedlist>
+
+
+
+
+
+
+      </para>
+    </section>
+
+
+
+  </chapter>
+
+</book>
+

@@ -1,0 +1,10 @@
+# Installation
+sudo apt-get install swi-prolog
+
+# Utiliser DES
+cd 'repertoire contenant des'
+chmod u+x des
+./des
+
+# alias à mettre dans le .bashrc
+alias des='/home/alexandre/DES/./des'
